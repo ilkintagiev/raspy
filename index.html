@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Парфюмерный магазин</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@300;400;500&display=swap');
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #e0eafc, #cfdef3);
+            color: #333;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            margin: 0;
+            color: #1e40af;
+        }
+        .header p {
+            font-size: 1.2rem;
+            color: #6b7280;
+        }
+        .carousel {
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+        .carousel-inner {
+            display: flex;
+            transition: transform 0.5s ease;
+        }
+        .carousel-item {
+            min-width: 100%;
+            box-sizing: border-box;
+            padding: 20px;
+            text-align: center;
+        }
+        .carousel-item img {
+            width: 100%;
+            max-width: 400px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        .carousel-item h3 {
+            margin-top: 10px;
+            font-size: 1.5rem;
+            color: #1e40af;
+        }
+        .carousel-item p {
+            font-size: 1rem;
+            color: #6b7280;
+        }
+        .carousel-control {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0,0,0,0.5);
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            z-index: 10;
+        }
+        .carousel-control.prev {
+            left: 10px;
+        }
+        .carousel-control.next {
+            right: 10px;
+        }
+        .catalog {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .product {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .product:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .product img {
+            width: 100%;
+            max-width: 200px;
+            border-radius: 10px;
+        }
+        .product h3 {
+            font-size: 1.2rem;
+            margin: 10px 0;
+            color: #1e40af;
+        }
+        .product p {
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+        .product .price {
+            font-weight: bold;
+            color: #1e40af;
+            margin: 10px 0;
+        }
+        .product button {
+            background: linear-gradient(90deg, #1e40af, #3b82f6);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .product button:hover {
+            transform: scale(1.05);
+        }
+        .navigation {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            max-width: 1200px;
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            z-index: 1000;
+        }
+        .nav-button {
+            text-align: center;
+            color: #6b7280;
+            cursor: pointer;
+            padding: 5px;
+            transition: color 0.3s;
+        }
+        .nav-button:hover, .nav-button.active {
+            color: #1e40af;
+        }
+        .nav-button i {
+            font-size: 1.5rem;
+        }
+        .hidden {
+            display: none;
+        }
+        .search-bar {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .search-bar input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 5px 0 0 5px;
+        }
+        .search-bar button {
+            padding: 10px 15px;
+            background: linear-gradient(90deg, #1e40af, #3b82f6);
+            color: white;
+            border: none;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
+        }
+        .search-results {
+            margin-top: 20px;
+        }
+        .cart-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .cart-item img {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        .cart-item p {
+            margin: 0;
+        }
+        .cart-summary {
+            text-align: right;
+            margin-top: 20px;
+        }
+        .cart-summary button {
+            background: linear-gradient(90deg, #1e40af, #3b82f6);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .profile-info {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .profile-info p {
+            margin: 10px 0;
+        }
+        .order-history {
+            margin-top: 20px;
+        }
+        .order-history h3 {
+            margin-bottom: 10px;
+        }
+        .order-history ul {
+            list-style: none;
+            padding: 0;
+        }
+        .order-history li {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Парфюмерный магазин</h1>
+            <p>Откройте для себя мир изысканных ароматов</p>
+        </div>
+
+        <!-- Карусель -->
+        <div class="carousel">
+            <div class="carousel-inner">
+                <div class="carousel-item">
+                    <img src="https://via.placeholder.com/400x200?text=Featured+Product+1" alt="Featured Product 1">
+                    <h3>Эксклюзивная новинка</h3>
+                    <p>Ограниченная серия, доступна только у нас</p>
+                </div>
+                <div class="carousel-item">
+                    <img src="https://via.placeholder.com/400x200?text=Featured+Product+2" alt="Featured Product 2">
+                    <h3>Бестселлер сезона</h3>
+                    <p>Самый популярный аромат этого года</p>
+                </div>
+                <div class="carousel-item">
+                    <img src="https://via.placeholder.com/400x200?text=Featured+Product+3" alt="Featured Product 3">
+                    <h3>Классика жанра</h3>
+                    <p>Вечный аромат, который никогда не выходит из моды</p>
+                </div>
+            </div>
+            <button class="carousel-control prev" onclick="prevSlide()">&#10094;</button>
+            <button class="carousel-control next" onclick="nextSlide()">&#10095;</button>
+        </div>
+
+        <!-- Поиск -->
+        <div class="search-bar">
+            <input type="text" id="search-input" placeholder="Поиск по названию или описанию">
+            <button onclick="searchProducts()">Найти</button>
+        </div>
+        <div id="search-results" class="hidden"></div>
+
+        <!-- Каталог -->
+        <div id="catalog">
+            <h2>Каталог</h2>
+            <div class="catalog"></div>
+        </div>
+
+        <!-- Избранное -->
+        <div id="favorites" class="hidden">
+            <h2>Избранное</h2>
+            <div class="catalog"></div>
+        </div>
+
+        <!-- Корзина -->
+        <div id="cart" class="hidden">
+            <h2>Корзина</h2>
+            <div class="cart-items"></div>
+            <div class="cart-summary">
+                <p id="cart-total">Итого: 0 руб.</p>
+                <button onclick="placeOrder()">Оформить заказ</button>
+            </div>
+        </div>
+
+        <!-- Личный кабинет -->
+        <div id="profile" class="hidden">
+            <h2>Личный кабинет</h2>
+            <div class="profile-info">
+                <p>Имя: <span id="user-name"></span></p>
+                <p>Email: <span id="user-email"></span></p>
+            </div>
+            <div class="order-history">
+                <h3>История заказов</h3>
+                <ul id="order-list"></ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Навигация -->
+    <div class="navigation">
+        <div class="nav-button" onclick="showSection('catalog')">
+            <i class="fas fa-store"></i>
+        </div>
+        <div class="nav-button" onclick="showSection('search')">
+            <i class="fas fa-search"></i>
+        </div>
+        <div class="nav-button" onclick="showSection('favorites')">
+            <i class="fas fa-heart"></i>
+        </div>
+        <div class="nav-button" onclick="showSection('cart')">
+            <i class="fas fa-shopping-cart"></i>
+        </div>
+        <div class="nav-button" onclick="showSection('profile')">
+            <i class="fas fa-user"></i>
+        </div>
+    </div>
+
+    <script>
+        const Telegram = window.Telegram.WebApp;
+        Telegram.ready();
+
+        let cart = [];
+        let favorites = [];
+        const products = [
+            { id: 'rose', name: 'Rose Elegance', price: 5200, description: 'Нежный аромат роз', image: 'https://via.placeholder.com/200x150?text=Rose+Elegance', category: 'floral' },
+            { id: 'citrus', name: 'Citrus Burst', price: 4800, description: 'Сочный цитрусовый взрыв', image: 'https://via.placeholder.com/200x150?text=Citrus+Burst', category: 'fresh' },
+            { id: 'amber', name: 'Amber Glow', price: 6500, description: 'Теплый янтарный шлейф', image: 'https://via.placeholder.com/200x150?text=Amber+Glow', category: 'woody' },
+            { id: 'jasmine', name: 'Jasmine Dream', price: 5500, description: 'Экзотический жасмин', image: 'https://via.placeholder.com/200x150?text=Jasmine+Dream', category: 'floral' },
+            { id: 'ocean', name: 'Ocean Breeze', price: 4900, description: 'Свежий морской бриз', image: 'https://via.placeholder.com/200x150?text=Ocean+Breeze', category: 'fresh' },
+            { id: 'sandalwood', name: 'Sandalwood Serenity', price: 6700, description: 'Успокаивающий сандал', image: 'https://via.placeholder.com/200x150?text=Sandalwood+Serenity', category: 'woody' },
+            { id: 'vanilla', name: 'Vanilla Bliss', price: 5300, description: 'Сладкая ваниль', image: 'https://via.placeholder.com/200x150?text=Vanilla+Bliss', category: 'oriental' },
+            { id: 'lavender', name: 'Lavender Fields', price: 4700, description: 'Расслабляющая лаванда', image: 'https://via.placeholder.com/200x150?text=Lavender+Fields', category: 'floral' }
+        ];
+
+        // Инициализация данных пользователя
+        const user = Telegram.initDataUnsafe.user || { first_name: 'Гость', username: 'Не указан' };
+        document.getElementById('user-name').textContent = user.first_name;
+        document.getElementById('user-email').textContent = user.username;
+
+        // Карусель
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.carousel-item');
+        const totalSlides = slides.length;
+        const carouselInner = document.querySelector('.carousel-inner');
+
+        function showSlide(index) {
+            if (index >= totalSlides) index = 0;
+            if (index < 0) index = totalSlides - 1;
+            currentSlide = index;
+            carouselInner.style.transform = `translateX(-${currentSlide * 100}%)`;
+        }
+
+        function nextSlide() {
+            showSlide(currentSlide + 1);
+        }
+
+        function prevSlide() {
+            showSlide(currentSlide - 1);
+        }
+
+        setInterval(nextSlide, 5000); // Автоматическая смена слайдов каждые 5 секунд
+
+        function showSection(sectionId) {
+            const sections = ['catalog', 'search', 'favorites', 'cart', 'profile'];
+            sections.forEach(id => {
+                const section = document.getElementById(id);
+                if (section) section.classList.add('hidden');
+            });
+            const activeSection = document.getElementById(sectionId);
+            if (activeSection) activeSection.classList.remove('hidden');
+
+            const buttons = document.querySelectorAll('.nav-button');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            const activeButton = document.querySelector(`.nav-button[onclick="showSection('${sectionId}')"]`);
+            if (activeButton) activeButton.classList.add('active');
+
+            if (sectionId === 'catalog') renderProducts();
+            if (sectionId === 'favorites') renderFavorites();
+            if (sectionId === 'cart') renderCart();
+        }
+
+        function renderProducts() {
+            const catalog = document.querySelector('#catalog .catalog');
+            catalog.innerHTML = '';
+            products.forEach(product => {
+                const div = document.createElement('div');
+                div.className = 'product';
+                div.innerHTML = `
+                    <img src="${product.image}" alt="${product.name}">
+                    <h3>${product.name}</h3>
+                    <p>${product.description}</p>
+                    <p class="price">${product.price} руб.</p>
+                    <button onclick="addToCart('${product.id}')">В корзину</button>
+                    <button onclick="addToFavorites('${product.id}')">В избранное</button>
+                `;
+                catalog.appendChild(div);
+            });
+        }
+
+        function addToCart(productId) {
+            cart.push(productId);
+            Telegram.MainButton.show();
+            Telegram.MainButton.text = 'Оформить заказ';
+            Telegram.MainButton.onClick(placeOrder);
+            alert(`${products.find(p => p.id === productId).name} добавлен в корзину!`);
+        }
+
+        function addToFavorites(productId) {
+            if (!favorites.includes(productId)) {
+                favorites.push(productId);
+                alert(`${products.find(p => p.id === productId).name} добавлен в избранное!`);
+            }
+        }
+
+        function renderCart() {
+            const cartItems = document.querySelector('.cart-items');
+            cartItems.innerHTML = '';
+            let total = 0;
+            cart.forEach(productId => {
+                const product = products.find(p => p.id === productId);
+                if (product) {
+                    const div = document.createElement('div');
+                    div.className = 'cart-item';
+                    div.innerHTML = `
+                        <img src="${product.image}" alt="${product.name}">
+                        <p>${product.name} - ${product.price} руб.</p>
+                    `;
+                    cartItems.appendChild(div);
+                    total += product.price;
+                }
+            });
+            document.getElementById('cart-total').textContent = `Итого: ${total} руб.`;
+        }
+
+        function renderFavorites() {
+            const favoritesCatalog = document.querySelector('#favorites .catalog');
+            favoritesCatalog.innerHTML = '';
+            favorites.forEach(productId => {
+                const product = products.find(p => p.id === productId);
+                if (product) {
+                    const div = document.createElement('div');
+                    div.className = 'product';
+                    div.innerHTML = `
+                        <img src="${product.image}" alt="${product.name}">
+                        <h3>${product.name}</h3>
+                        <p>${product.description}</p>
+                        <p class="price">${product.price} руб.</p>
+                    `;
+                    favoritesCatalog.appendChild(div);
+                }
+            });
+        }
+
+        function placeOrder() {
+            cart = [];
+            Telegram.MainButton.hide();
+            alert('Спасибо за заказ! Мы свяжемся с вами.');
+            showSection('catalog');
+        }
+
+        function searchProducts() {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const results = products.filter(p => p.name.toLowerCase().includes(query) || p.description.toLowerCase().includes(query));
+            const searchResults = document.getElementById('search-results');
+            searchResults.innerHTML = '';
+            results.forEach(product => {
+                const div = document.createElement('div');
+                div.className = 'product';
+                div.innerHTML = `
+                    <img src="${product.image}" alt="${product.name}">
+                    <h3>${product.name}</h3>
+                    <p>${product.description}</p>
+                    <p class="price">${product.price} руб.</p>
+                    <button onclick="addToCart('${product.id}')">В корзину</button>
+                    <button onclick="addToFavorites('${product.id}')">В избранное</button>
+                `;
+                searchResults.appendChild(div);
+            });
+            searchResults.classList.remove('hidden');
+        }
+
+        // Инициализация
+        document.querySelector('.nav-button').classList.add('active');
+        showSection('catalog');
+    </script>
+</body>
+</html>
