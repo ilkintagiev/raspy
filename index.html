@@ -3,46 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Парфюмерный магазин</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Магазин в Telegram</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@300;400;500&display=swap');
         body {
-            font-family: 'Roboto', sans-serif;
-            margin: 0;
-            padding: 0;
-            background: linear-gradient(135deg, #e0eafc, #cfdef3);
-            color: #333;
-            min-height: 100vh;
             overflow-x: hidden;
+            background: linear-gradient(135deg, #1e0533, #2a0a5e);
         }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
+        #particles-js {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
         }
-        .header {
-            text-align: center;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        .header h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: 2.5rem;
-            margin: 0;
-            color: #1e40af;
+        .animate-fadeIn {
+            animation: fadeIn 0.8s ease-out;
         }
-        .header p {
-            font-size: 1.2rem;
-            color: #6b7280;
+        .product {
+            perspective: 1000px;
+            transition: transform 0.4s ease;
+        }
+        .product-inner {
+            transform-style: preserve-3d;
+            transition: transform 0.4s ease;
+        }
+        .product:hover .product-inner {
+            transform: rotateY(10deg) scale(1.05);
+        }
+        .product img {
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.3));
         }
         .carousel {
-            position: relative;
             overflow: hidden;
-            margin-bottom: 30px;
+            position: relative;
         }
         .carousel-inner {
             display: flex;
@@ -51,450 +51,283 @@
         .carousel-item {
             min-width: 100%;
             box-sizing: border-box;
-            padding: 20px;
-            text-align: center;
         }
-        .carousel-item img {
-            width: 100%;
-            max-width: 400px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-        }
-        .carousel-item h3 {
-            margin-top: 10px;
-            font-size: 1.5rem;
-            color: #1e40af;
-        }
-        .carousel-item p {
-            font-size: 1rem;
-            color: #6b7280;
-        }
-        .carousel-control {
+        .btn-slide {
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            background: rgba(0,0,0,0.5);
-            color: white;
-            border: none;
+            background: rgba(255,255,255,0.2);
             padding: 10px;
-            cursor: pointer;
-            z-index: 10;
+            border-radius: 50%;
         }
-        .carousel-control.prev {
-            left: 10px;
-        }
-        .carousel-control.next {
-            right: 10px;
-        }
-        .catalog {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-        }
-        .product {
-            background: rgba(255, 255, 255, 0.9);
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            text-align: center;
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-        .product:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-        .product img {
-            width: 100%;
-            max-width: 200px;
-            border-radius: 10px;
-        }
-        .product h3 {
-            font-size: 1.2rem;
-            margin: 10px 0;
-            color: #1e40af;
-        }
-        .product p {
-            font-size: 0.9rem;
-            color: #6b7280;
-        }
-        .product .price {
-            font-weight: bold;
-            color: #1e40af;
-            margin: 10px 0;
-        }
-        .product button {
-            background: linear-gradient(90deg, #1e40af, #3b82f6);
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        .product button:hover {
-            transform: scale(1.05);
-        }
-        .navigation {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            max-width: 1200px;
-            background: rgba(255, 255, 255, 0.95);
-            box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
-            display: flex;
-            justify-content: space-around;
-            padding: 10px 0;
-            z-index: 1000;
-        }
-        .nav-button {
-            text-align: center;
-            color: #6b7280;
-            cursor: pointer;
-            padding: 5px;
-            transition: color 0.3s;
-        }
-        .nav-button:hover, .nav-button.active {
-            color: #1e40af;
-        }
-        .nav-button i {
-            font-size: 1.5rem;
-        }
-        .hidden {
-            display: none;
-        }
-        .search-bar {
-            display: flex;
-            margin-bottom: 20px;
-        }
-        .search-bar input {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #d1d5db;
-            border-radius: 5px 0 0 5px;
-        }
-        .search-bar button {
-            padding: 10px 15px;
-            background: linear-gradient(90deg, #1e40af, #3b82f6);
-            color: white;
-            border: none;
-            border-radius: 0 5px 5px 0;
-            cursor: pointer;
-        }
-        .search-results {
-            margin-top: 20px;
-        }
-        .cart-item {
-            display: flex;
-            align-items: center;
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-        }
-        .cart-item img {
-            width: 50px;
-            height: 50px;
-            object-fit: cover;
-            border-radius: 5px;
-            margin-right: 10px;
-        }
-        .cart-item p {
-            margin: 0;
-        }
-        .cart-summary {
-            text-align: right;
-            margin-top: 20px;
-        }
-        .cart-summary button {
-            background: linear-gradient(90deg, #1e40af, #3b82f6);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .profile-info {
-            background: rgba(255, 255, 255, 0.9);
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .profile-info p {
-            margin: 10px 0;
-        }
-        .order-history {
-            margin-top: 20px;
-        }
-        .order-history h3 {
-            margin-bottom: 10px;
-        }
-        .order-history ul {
-            list-style: none;
-            padding: 0;
-        }
-        .order-history li {
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
+        .btn-slide:hover {
+            background: rgba(255,255,255,0.4);
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>Парфюмерный магазин</h1>
-            <p>Откройте для себя мир изысканных ароматов</p>
-        </div>
-
-        <!-- Карусель -->
-        <div class="carousel">
-            <div class="carousel-inner">
-                <div class="carousel-item">
-                    <img src="https://via.placeholder.com/400x200?text=Featured+Product+1" alt="Featured Product 1">
-                    <h3>Эксклюзивная новинка</h3>
-                    <p>Ограниченная серия, доступна только у нас</p>
-                </div>
-                <div class="carousel-item">
-                    <img src="https://via.placeholder.com/400x200?text=Featured+Product+2" alt="Featured Product 2">
-                    <h3>Бестселлер сезона</h3>
-                    <p>Самый популярный аромат этого года</p>
-                </div>
-                <div class="carousel-item">
-                    <img src="https://via.placeholder.com/400x200?text=Featured+Product+3" alt="Featured Product 3">
-                    <h3>Классика жанра</h3>
-                    <p>Вечный аромат, который никогда не выходит из моды</p>
-                </div>
-            </div>
-            <button class="carousel-control prev" onclick="prevSlide()">&#10094;</button>
-            <button class="carousel-control next" onclick="nextSlide()">&#10095;</button>
-        </div>
-
-        <!-- Поиск -->
-        <div class="search-bar">
-            <input type="text" id="search-input" placeholder="Поиск по названию или описанию">
-            <button onclick="searchProducts()">Найти</button>
-        </div>
-        <div id="search-results" class="hidden"></div>
-
-        <!-- Каталог -->
-        <div id="catalog">
-            <h2>Каталог</h2>
-            <div class="catalog"></div>
-        </div>
-
-        <!-- Избранное -->
-        <div id="favorites" class="hidden">
-            <h2>Избранное</h2>
-            <div class="catalog"></div>
-        </div>
-
-        <!-- Корзина -->
-        <div id="cart" class="hidden">
-            <h2>Корзина</h2>
-            <div class="cart-items"></div>
-            <div class="cart-summary">
-                <p id="cart-total">Итого: 0 руб.</p>
-                <button onclick="placeOrder()">Оформить заказ</button>
+<body class="min-h-screen flex items-center justify-center text-white">
+    <div id="particles-js"></div>
+    <div class="container mx-auto p-4 max-w-5xl relative">
+        <div id="catalog" class="bg-white bg-opacity-10 backdrop-blur-lg rounded-lg shadow-2xl p-6 mb-6 animate-fadeIn">
+            <h1 class="text-4xl font-extrabold text-center text-white mb-6 drop-shadow-lg">Каталог товаров</h1>
+            <div class="carousel">
+                <div id="products" class="carousel-inner"></div>
+                <button onclick="slide(-1)" class="btn-slide left-0">❮</button>
+                <button onclick="slide(1)" class="btn-slide right-0">❯</button>
             </div>
         </div>
 
-        <!-- Личный кабинет -->
-        <div id="profile" class="hidden">
-            <h2>Личный кабинет</h2>
-            <div class="profile-info">
-                <p>Имя: <span id="user-name"></span></p>
-                <p>Email: <span id="user-email"></span></p>
-            </div>
-            <div class="order-history">
-                <h3>История заказов</h3>
-                <ul id="order-list"></ul>
-            </div>
+        <div id="cart" class="bg-white bg-opacity-10 backdrop-blur-lg rounded-lg shadow-2xl p-6 mb-6 hidden animate-fadeIn">
+            <h1 class="text-4xl font-extrabold text-center text-white mb-6 drop-shadow-lg">Корзина</h1>
+            <div id="cart-items" class="space-y-4"></div>
+            <button onclick="sendOrder()" class="bg-gradient-to-r from-green-400 to-green-600 text-white px-6 py-3 rounded-full mt-6 w-full hover:from-green-500 hover:to-green-700 transition transform hover:scale-105">Отправить заказ</button>
         </div>
-    </div>
 
-    <!-- Навигация -->
-    <div class="navigation">
-        <div class="nav-button" onclick="showSection('catalog')">
-            <i class="fas fa-store"></i>
+        <div id="admin" class="bg-white bg-opacity-10 backdrop-blur-lg rounded-lg shadow-2xl p-6 mb-6 hidden animate-fadeIn">
+            <h1 class="text-4xl font-extrabold text-center text-white mb-6 drop-shadow-lg">Админ-панель</h1>
+            <input type="password" id="admin-password" class="bg-white bg-opacity-20 border-none rounded-md p-3 w-full mb-4 text-white placeholder-gray-300" placeholder="Пароль">
+            <button onclick="loginAdmin()" class="bg-gradient-to-r from-blue-400 to-blue-600 text-white px-6 py-3 rounded-full w-full hover:from-blue-500 hover:to-blue-700 transition transform hover:scale-105">Войти</button>
+            <div id="admin-content" class="hidden mt-6">
+                <h2 class="text-2xl font-bold text-white mb-4">Добавить/Редактировать товар</h2>
+                <input type="text" id="product-name" class="bg-white bg-opacity-20 border-none rounded-md p-3 w-full mb-4 text-white placeholder-gray-300" placeholder="Название">
+                <textarea id="product-description" class="bg-white bg-opacity-20 border-none rounded-md p-3 w-full mb-4 text-white placeholder-gray-300" placeholder="Описание"></textarea>
+                <input type="number" id="product-price" class="bg-white bg-opacity-20 border-none rounded-md p-3 w-full mb-4 text-white placeholder-gray-300" placeholder="Цена">
+                <input type="file" id="product-image" class="mb-4 text-white" accept="image/*">
+                <button onclick="saveProduct()" class="bg-gradient-to-r from-green-400 to-green-600 text-white px-6 py-3 rounded-full w-full hover:from-green-500 hover:to-green-700 transition transform hover:scale-105">Сохранить</button>
+                <h2 class="text-2xl font-bold text-white mt-6 mb-4">Список товаров</h2>
+                <div id="admin-products" class="space-y-4"></div>
+            </div>
         </div>
-        <div class="nav-button" onclick="showSection('search')">
-            <i class="fas fa-search"></i>
-        </div>
-        <div class="nav-button" onclick="showSection('favorites')">
-            <i class="fas fa-heart"></i>
-        </div>
-        <div class="nav-button" onclick="showSection('cart')">
-            <i class="fas fa-shopping-cart"></i>
-        </div>
-        <div class="nav-button" onclick="showSection('profile')">
-            <i class="fas fa-user"></i>
+
+        <div class="flex justify-around mt-6">
+            <button onclick="showCatalog()" class="bg-gradient-to-r from-purple-400 to-purple-600 text-white px-6 py-3 rounded-full hover:from-purple-500 hover:to-purple-700 transition transform hover:scale-105">Каталог</button>
+            <button onclick="showCart()" class="bg-gradient-to-r from-purple-400 to-purple-600 text-white px-6 py-3 rounded-full hover:from-purple-500 hover:to-purple-700 transition transform hover:scale-105">Корзина</button>
+            <button onclick="showAdmin()" class="bg-gradient-to-r from-purple-400 to-purple-600 text-white px-6 py-3 rounded-full hover:from-purple-500 hover:to-purple-700 transition transform hover:scale-105">Админ-панель</button>
         </div>
     </div>
 
     <script>
-        const Telegram = window.Telegram.WebApp;
-        Telegram.ready();
-
-        let cart = [];
-        let favorites = [];
-        const products = [
-            { id: 'rose', name: 'Rose Elegance', price: 5200, description: 'Нежный аромат роз', image: 'https://via.placeholder.com/200x150?text=Rose+Elegance', category: 'floral' },
-            { id: 'citrus', name: 'Citrus Burst', price: 4800, description: 'Сочный цитрусовый взрыв', image: 'https://via.placeholder.com/200x150?text=Citrus+Burst', category: 'fresh' },
-            { id: 'amber', name: 'Amber Glow', price: 6500, description: 'Теплый янтарный шлейф', image: 'https://via.placeholder.com/200x150?text=Amber+Glow', category: 'woody' },
-            { id: 'jasmine', name: 'Jasmine Dream', price: 5500, description: 'Экзотический жасмин', image: 'https://via.placeholder.com/200x150?text=Jasmine+Dream', category: 'floral' },
-            { id: 'ocean', name: 'Ocean Breeze', price: 4900, description: 'Свежий морской бриз', image: 'https://via.placeholder.com/200x150?text=Ocean+Breeze', category: 'fresh' },
-            { id: 'sandalwood', name: 'Sandalwood Serenity', price: 6700, description: 'Успокаивающий сандал', image: 'https://via.placeholder.com/200x150?text=Sandalwood+Serenity', category: 'woody' },
-            { id: 'vanilla', name: 'Vanilla Bliss', price: 5300, description: 'Сладкая ваниль', image: 'https://via.placeholder.com/200x150?text=Vanilla+Bliss', category: 'oriental' },
-            { id: 'lavender', name: 'Lavender Fields', price: 4700, description: 'Расслабляющая лаванда', image: 'https://via.placeholder.com/200x150?text=Lavender+Fields', category: 'floral' }
+        let products = JSON.parse(localStorage.getItem('products')) || [
+            { id: 1, name: 'Парфюм "Летний бриз"', description: 'Свежий аромат с нотами моря и цитрусовых.', price: 1200, image: 'https://via.placeholder.com/300?text=Летний+бриз' },
+            { id: 2, name: 'Парфюм "Тёмная роза"', description: 'Глубокий цветочный аромат с оттенками розы и ванили.', price: 1800, image: 'https://via.placeholder.com/300?text=Тёмная+роза' },
+            { id: 3, name: 'Парфюм "Золотой закат"', description: 'Теплый и пряный аромат с нотами амбры и сандала.', price: 2500, image: 'https://via.placeholder.com/300?text=Золотой+закат' }
         ];
-
-        // Инициализация данных пользователя
-        const user = Telegram.initDataUnsafe.user || { first_name: 'Гость', username: 'Не указан' };
-        document.getElementById('user-name').textContent = user.first_name;
-        document.getElementById('user-email').textContent = user.username;
-
-        // Карусель
+        let cart = [];
+        let editingProductId = null;
         let currentSlide = 0;
-        const slides = document.querySelectorAll('.carousel-item');
-        const totalSlides = slides.length;
-        const carouselInner = document.querySelector('.carousel-inner');
 
-        function showSlide(index) {
-            if (index >= totalSlides) index = 0;
-            if (index < 0) index = totalSlides - 1;
-            currentSlide = index;
-            carouselInner.style.transform = `translateX(-${currentSlide * 100}%)`;
+        particlesJS('particles-js', {
+            particles: {
+                number: { value: 80, density: { enable: true, value_area: 800 } },
+                color: { value: '#ffffff' },
+                shape: { type: 'circle' },
+                opacity: { value: 0.5, random: true },
+                size: { value: 3, random: true },
+                line_linked: { enable: true, distance: 150, color: '#ffffff', opacity: 0.4, width: 1 },
+                move: { enable: true, speed: 2, direction: 'none', random: false, straight: false, out_mode: 'out' }
+            },
+            interactivity: {
+                detect_on: 'canvas',
+                events: { onhover: { enable: true, mode: 'repulse' }, onclick: { enable: true, mode: 'push' }, resize: true },
+                modes: { repulse: { distance: 100, duration: 0.4 }, push: { particles_nb: 4 } }
+            },
+            retina_detect: true
+        });
+
+        function saveProducts() {
+            localStorage.setItem('products', JSON.stringify(products));
         }
 
-        function nextSlide() {
-            showSlide(currentSlide + 1);
+        function showCatalog() {
+            document.getElementById('catalog').classList.remove('hidden');
+            document.getElementById('cart').classList.add('hidden');
+            document.getElementById('admin').classList.add('hidden');
+            renderProducts();
         }
 
-        function prevSlide() {
-            showSlide(currentSlide - 1);
+        function showCart() {
+            document.getElementById('catalog').classList.add('hidden');
+            document.getElementById('cart').classList.remove('hidden');
+            document.getElementById('admin').classList.add('hidden');
+            renderCart();
         }
 
-        setInterval(nextSlide, 5000); // Автоматическая смена слайдов каждые 5 секунд
-
-        function showSection(sectionId) {
-            const sections = ['catalog', 'search', 'favorites', 'cart', 'profile'];
-            sections.forEach(id => {
-                const section = document.getElementById(id);
-                if (section) section.classList.add('hidden');
-            });
-            const activeSection = document.getElementById(sectionId);
-            if (activeSection) activeSection.classList.remove('hidden');
-
-            const buttons = document.querySelectorAll('.nav-button');
-            buttons.forEach(btn => btn.classList.remove('active'));
-            const activeButton = document.querySelector(`.nav-button[onclick="showSection('${sectionId}')"]`);
-            if (activeButton) activeButton.classList.add('active');
-
-            if (sectionId === 'catalog') renderProducts();
-            if (sectionId === 'favorites') renderFavorites();
-            if (sectionId === 'cart') renderCart();
+        function showAdmin() {
+            document.getElementById('catalog').classList.add('hidden');
+            document.getElementById('cart').classList.add('hidden');
+            document.getElementById('admin').classList.remove('hidden');
         }
 
         function renderProducts() {
-            const catalog = document.querySelector('#catalog .catalog');
-            catalog.innerHTML = '';
+            const productsDiv = document.getElementById('products');
+            productsDiv.innerHTML = '';
             products.forEach(product => {
-                const div = document.createElement('div');
-                div.className = 'product';
-                div.innerHTML = `
-                    <img src="${product.image}" alt="${product.name}">
-                    <h3>${product.name}</h3>
-                    <p>${product.description}</p>
-                    <p class="price">${product.price} руб.</p>
-                    <button onclick="addToCart('${product.id}')">В корзину</button>
-                    <button onclick="addToFavorites('${product.id}')">В избранное</button>
+                const productDiv = document.createElement('div');
+                productDiv.className = 'carousel-item product p-4 text-center';
+                productDiv.innerHTML = `
+                    <div class="product-inner bg-white bg-opacity-20 rounded-lg shadow-lg p-6">
+                        <img src="${product.image}" alt="${product.name}" class="mb-4 rounded-md w-full h-48 object-cover">
+                        <h3 class="text-2xl font-bold text-white drop-shadow-md">${product.name}</h3>
+                        <p class="text-gray-200">${product.description}</p>
+                        <p class="text-green-300 font-bold mt-2 text-xl">Цена: ${product.price} руб.</p>
+                        <button onclick="addToCart(${product.id})" class="bg-gradient-to-r from-blue-400 to-blue-600 text-white px-6 py-2 rounded-full mt-4 hover:from-blue-500 hover:to-blue-700 transition transform hover:scale-105">Добавить в корзину</button>
+                    </div>
                 `;
-                catalog.appendChild(div);
+                productsDiv.appendChild(productDiv);
             });
+            updateCarousel();
+        }
+
+        function slide(direction) {
+            currentSlide += direction;
+            if (currentSlide < 0) currentSlide = products.length - 1;
+            if (currentSlide >= products.length) currentSlide = 0;
+            updateCarousel();
+        }
+
+        function updateCarousel() {
+            const productsDiv = document.getElementById('products');
+            productsDiv.style.transform = `translateX(-${currentSlide * 100}%)`;
         }
 
         function addToCart(productId) {
-            cart.push(productId);
-            Telegram.MainButton.show();
-            Telegram.MainButton.text = 'Оформить заказ';
-            Telegram.MainButton.onClick(placeOrder);
-            alert(`${products.find(p => p.id === productId).name} добавлен в корзину!`);
-        }
-
-        function addToFavorites(productId) {
-            if (!favorites.includes(productId)) {
-                favorites.push(productId);
-                alert(`${products.find(p => p.id === productId).name} добавлен в избранное!`);
+            const product = products.find(p => p.id === productId);
+            if (product) {
+                cart.push(product);
+                alert('Товар добавлен в корзину!');
+                renderCart();
             }
         }
 
         function renderCart() {
-            const cartItems = document.querySelector('.cart-items');
-            cartItems.innerHTML = '';
-            let total = 0;
-            cart.forEach(productId => {
-                const product = products.find(p => p.id === productId);
-                if (product) {
-                    const div = document.createElement('div');
-                    div.className = 'cart-item';
-                    div.innerHTML = `
-                        <img src="${product.image}" alt="${product.name}">
-                        <p>${product.name} - ${product.price} руб.</p>
-                    `;
-                    cartItems.appendChild(div);
-                    total += product.price;
-                }
-            });
-            document.getElementById('cart-total').textContent = `Итого: ${total} руб.`;
-        }
-
-        function renderFavorites() {
-            const favoritesCatalog = document.querySelector('#favorites .catalog');
-            favoritesCatalog.innerHTML = '';
-            favorites.forEach(productId => {
-                const product = products.find(p => p.id === productId);
-                if (product) {
-                    const div = document.createElement('div');
-                    div.className = 'product';
-                    div.innerHTML = `
-                        <img src="${product.image}" alt="${product.name}">
-                        <h3>${product.name}</h3>
-                        <p>${product.description}</p>
-                        <p class="price">${product.price} руб.</p>
-                    `;
-                    favoritesCatalog.appendChild(div);
-                }
-            });
-        }
-
-        function placeOrder() {
-            cart = [];
-            Telegram.MainButton.hide();
-            alert('Спасибо за заказ! Мы свяжемся с вами.');
-            showSection('catalog');
-        }
-
-        function searchProducts() {
-            const query = document.getElementById('search-input').value.toLowerCase();
-            const results = products.filter(p => p.name.toLowerCase().includes(query) || p.description.toLowerCase().includes(query));
-            const searchResults = document.getElementById('search-results');
-            searchResults.innerHTML = '';
-            results.forEach(product => {
-                const div = document.createElement('div');
-                div.className = 'product';
-                div.innerHTML = `
-                    <img src="${product.image}" alt="${product.name}">
-                    <h3>${product.name}</h3>
-                    <p>${product.description}</p>
-                    <p class="price">${product.price} руб.</p>
-                    <button onclick="addToCart('${product.id}')">В корзину</button>
-                    <button onclick="addToFavorites('${product.id}')">В избранное</button>
+            const cartItemsDiv = document.getElementById('cart-items');
+            cartItemsDiv.innerHTML = '';
+            cart.forEach(item => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'flex items-center justify-between bg-white bg-opacity-20 p-4 rounded-md mb-2 transform hover:scale-102 transition';
+                itemDiv.innerHTML = `
+                    <img src="${item.image}" alt="${item.name}" class="w-16 h-16 object-cover rounded-md">
+                    <p class="text-white">${item.name} - ${item.price} руб.</p>
                 `;
-                searchResults.appendChild(div);
+                cartItemsDiv.appendChild(itemDiv);
             });
-            searchResults.classList.remove('hidden');
         }
 
-        // Инициализация
-        document.querySelector('.nav-button').classList.add('active');
-        showSection('catalog');
+        function sendOrder() {
+            if (cart.length === 0) {
+                alert('Корзина пуста');
+                return;
+            }
+            const orderText = "Новый заказ:\n" + cart.map(item => `${item.name} - ${item.price} руб.`).join('\n');
+            const telegramToken = 'YOUR_TELEGRAM_BOT_TOKEN'; // Замените на ваш токен бота
+            const chatId = 'YOUR_CHAT_ID'; // Замените на ваш ID чата
+            const url = `https://api.telegram.org/bot${telegramToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(orderText)}`;
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.ok) {
+                        alert('Заказ успешно отправлен!');
+                        cart = [];
+                        showCatalog();
+                    } else {
+                        alert('Ошибка отправки заказа');
+                    }
+                })
+                .catch(error => alert('Ошибка: ' + error));
+        }
+
+        function loginAdmin() {
+            const password = document.getElementById('admin-password').value;
+            if (password === 'admin123') {
+                document.getElementById('admin-content').classList.remove('hidden');
+                renderAdminProducts();
+            } else {
+                alert('Неверный пароль');
+            }
+        }
+
+        function renderAdminProducts() {
+            const adminProductsDiv = document.getElementById('admin-products');
+            adminProductsDiv.innerHTML = '';
+            products.forEach(product => {
+                const productDiv = document.createElement('div');
+                productDiv.className = 'flex items-center justify-between bg-white bg-opacity-20 p-4 rounded-md mb-2';
+                productDiv.innerHTML = `
+                    <img src="${product.image}" alt="${product.name}" class="w-12 h-12 object-cover rounded-md">
+                    <p class="text-white">${product.name} - ${product.price} руб.</p>
+                    <div>
+                        <button onclick="editProduct(${product.id})" class="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white px-3 py-1 rounded-full mr-2 hover:from-yellow-500 hover:to-yellow-700 transition">Редактировать</button>
+                        <button onclick="deleteProduct(${product.id})" class="bg-gradient-to-r from-red-400 to-red-600 text-white px-3 py-1 rounded-full hover:from-red-500 hover:to-red-700 transition">Удалить</button>
+                    </div>
+                `;
+                adminProductsDiv.appendChild(productDiv);
+            });
+        }
+
+        function saveProduct() {
+            const name = document.getElementById('product-name').value;
+            const description = document.getElementById('product-description').value;
+            const price = document.getElementById('product-price').value;
+            const fileInput = document.getElementById('product-image');
+            const file = fileInput.files[0];
+
+            if (!name || !description || !price) {
+                alert('Заполните все поля');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const image = e.target.result;
+                if (editingProductId) {
+                    const productIndex = products.findIndex(p => p.id === editingProductId);
+                    products[productIndex] = { id: editingProductId, name, description, price, image: image || products[productIndex].image };
+                } else {
+                    const newId = products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1;
+                    products.push({ id: newId, name, description, price, image });
+                }
+                saveProducts();
+                renderAdminProducts();
+                alert('Товар сохранен');
+                resetProductForm();
+            };
+            if (file) {
+                reader.readAsDataURL(file);
+            } else if (editingProductId) {
+                const product = products.find(p => p.id === editingProductId);
+                reader.onload({ target: { result: product.image } });
+            } else {
+                alert('Выберите изображение');
+            }
+        }
+
+        function editProduct(productId) {
+            const product = products.find(p => p.id === productId);
+            if (product) {
+                document.getElementById('product-name').value = product.name;
+                document.getElementById('product-description').value = product.description;
+                document.getElementById('product-price').value = product.price;
+                editingProductId = productId;
+            }
+        }
+
+        function deleteProduct(productId) {
+            if (confirm('Удалить товар?')) {
+                products = products.filter(p => p.id !== productId);
+                saveProducts();
+                renderAdminProducts();
+            }
+        }
+
+        function resetProductForm() {
+            document.getElementById('product-name').value = '';
+            document.getElementById('product-description').value = '';
+            document.getElementById('product-price').value = '';
+            document.getElementById('product-image').value = '';
+            editingProductId = null;
+        }
+
+        showCatalog();
     </script>
 </body>
 </html>
