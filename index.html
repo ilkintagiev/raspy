@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Магазин в Telegram</title>
+    <title>Магазин парфюмерии</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
     <style>
         body {
-            background: linear-gradient(135deg, #006A4E, #004d38); /* RAL 6016 gradient */
-            color: #ffffff; /* White text for contrast */
+            background: linear-gradient(135deg, #006A4E, #004d38); /* RAL 6016 */
+            color: #ffffff;
             font-family: 'Arial', sans-serif;
             margin: 0;
             padding: 0;
@@ -68,78 +69,122 @@
         .btn-slide:hover {
             background: rgba(255,255,255,0.4);
         }
-        /* Button styles for contrast */
-        button {
-            background: linear-gradient(90deg, #ffffff, #f0f0f0);
-            color: #006A4E;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
+        .nav-button {
             transition: transform 0.2s;
         }
-        button:hover {
-            transform: scale(1.05);
-        }
-        /* Admin panel inputs */
-        input, textarea {
-            background: rgba(255, 255, 255, 0.8);
-            color: #333;
-            border: none;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 10px;
+        .nav-button:hover {
+            transform: scale(1.1);
         }
     </style>
 </head>
-<body>
+<body class="min-h-screen">
     <div id="particles-js"></div>
     <div class="container mx-auto p-4 max-w-5xl relative">
-        <div id="catalog" class="bg-white bg-opacity-10 backdrop-blur-lg rounded-lg shadow-2xl p-6 mb-6 animate-fadeIn">
-            <h1 class="text-4xl font-extrabold text-center mb-6 drop-shadow-lg">Каталог товаров</h1>
+        <!-- Главная страница -->
+        <div id="home" class="bg-white bg-opacity-10 backdrop-blur-lg rounded-lg shadow-2xl p-6 mb-6 animate-fadeIn">
+            <h1 class="text-4xl font-extrabold text-center mb-6 drop-shadow-lg">Топ-10 ароматов</h1>
             <div class="carousel">
-                <div id="products" class="carousel-inner"></div>
+                <div id="carousel-inner" class="carousel-inner"></div>
                 <button onclick="slide(-1)" class="btn-slide left-0">❮</button>
                 <button onclick="slide(1)" class="btn-slide right-0">❯</button>
             </div>
         </div>
 
+        <!-- Каталог -->
+        <div id="catalog" class="bg-white bg-opacity-10 backdrop-blur-lg rounded-lg shadow-2xl p-6 mb-6 hidden animate-fadeIn">
+            <h1 class="text-4xl font-extrabold text-center mb-6 drop-shadow-lg">Каталог</h1>
+            <div class="flex flex-col sm:flex-row gap-4 mb-4">
+                <input type="text" id="search" class="bg-white bg-opacity-20 border-none rounded-md p-3 flex-1 text-white placeholder-gray-300" placeholder="Поиск по названию или описанию" oninput="filterProducts()">
+                <select id="category" class="bg-white bg-opacity-20 border-none rounded-md p-3 text-white" onchange="filterProducts()">
+                    <option value="">Все категории</option>
+                    <option value="men's">Мужские</option>
+                    <option value="women's">Женские</option>
+                    <option value="unisex">Унисекс</option>
+                </select>
+            </div>
+            <div id="product-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
+        </div>
+
+        <!-- Детали товара -->
+        <div id="product-details" class="bg-white bg-opacity-10 backdrop-blur-lg rounded-lg shadow-2xl p-6 mb-6 hidden animate-fadeIn">
+            <button onclick="backToCatalog()" class="bg-gradient-to-r from-gray-400 to-gray-600 text-white px-4 py-2 rounded-full mb-4">Назад</button>
+            <div id="product-info"></div>
+        </div>
+
+        <!-- Корзина -->
         <div id="cart" class="bg-white bg-opacity-10 backdrop-blur-lg rounded-lg shadow-2xl p-6 mb-6 hidden animate-fadeIn">
             <h1 class="text-4xl font-extrabold text-center mb-6 drop-shadow-lg">Корзина</h1>
             <div id="cart-items" class="space-y-4"></div>
-            <button onclick="sendOrder()" class="w-full py-3 mt-6 rounded-lg">Отправить заказ</button>
+            <button onclick="sendOrder()" class="bg-gradient-to-r from-green-400 to-green-600 text-white px-6 py-3 rounded-full mt-6 w-full hover:from-green-500 hover:to-green-700 transition transform hover:scale-105">Отправить заказ</button>
         </div>
 
+        <!-- Админ-панель -->
         <div id="admin" class="bg-white bg-opacity-10 backdrop-blur-lg rounded-lg shadow-2xl p-6 mb-6 hidden animate-fadeIn">
             <h1 class="text-4xl font-extrabold text-center mb-6 drop-shadow-lg">Админ-панель</h1>
-            <input type="password" id="admin-password" class="w-full p-3 rounded-md mb-4" placeholder="Пароль">
-            <button onclick="loginAdmin()" class="w-full py-3 rounded-md">Войти</button>
+            <input type="password" id="admin-password" class="bg-white bg-opacity-20 border-none rounded-md p-3 w-full mb-4 text-white placeholder-gray-300" placeholder="Пароль">
+            <button onclick="loginAdmin()" class="bg-gradient-to-r from-blue-400 to-blue-600 text-white px-6 py-3 rounded-full w-full hover:from-blue-500 hover:to-blue-700 transition transform hover:scale-105">Войти</button>
             <div id="admin-content" class="hidden mt-6">
-                <h2 class="text-2xl font-bold mb-4">Добавить/Редактировать товар</h2>
-                <input type="text" id="product-name" class="w-full p-3 rounded-md mb-4" placeholder="Название">
-                <textarea id="product-description" class="w-full p-3 rounded-md mb-4" placeholder="Описание"></textarea>
-                <input type="number" id="product-price" class="w-full p-3 rounded-md mb-4" placeholder="Цена">
-                <input type="file" id="product-image" class="mb-4" accept="image/*">
-                <button onclick="saveProduct()" class="w-full py-3 rounded-md">Сохранить</button>
-                <h2 class="text-2xl font-bold mt-6 mb-4">Список товаров</h2>
+                <h2 class="text-2xl font-bold text-white mb-4">Добавить/Редактировать товар</h2>
+                <input type="text" id="product-name" class="bg-white bg-opacity-20 border-none rounded-md p-3 w-full mb-4 text-white placeholder-gray-300" placeholder="Название">
+                <select id="product-category" class="bg-white bg-opacity-20 border-none rounded-md p-3 w-full mb-4 text-white">
+                    <option value="">Выберите категорию</option>
+                    <option value="men's">Мужские</option>
+                    <option value="women's">Женские</option>
+                    <option value="unisex">Унисекс</option>
+                </select>
+                <textarea id="product-description" class="bg-white bg-opacity-20 border-none rounded-md p-3 w-full mb-4 text-white placeholder-gray-300" placeholder="Описание"></textarea>
+                <input type="number" id="product-price" class="bg-white bg-opacity-20 border-none rounded-md p-3 w-full mb-4 text-white placeholder-gray-300" placeholder="Цена">
+                <input type="text" id="product-photo" class="bg-white bg-opacity-20 border-none rounded-md p-3 w-full mb-4 text-white placeholder-gray-300" placeholder="URL фото">
+                <input type="text" id="product-video" class="bg-white bg-opacity-20 border-none rounded-md p-3 w-full mb-4 text-white placeholder-gray-300" placeholder="URL видео (YouTube)">
+                <label class="block mb-4">
+                    <input type="checkbox" id="product-available" class="mr-2"> Доступен
+                </label>
+                <label class="block mb-4">
+                    <input type="checkbox" id="product-sample" class="mr-2"> Возможен распив
+                </label>
+                <button onclick="saveProduct()" class="bg-gradient-to-r from-green-400 to-green-600 text-white px-6 py-3 rounded-full w-full hover:from-green-500 hover:to-green-700 transition transform hover:scale-105">Сохранить</button>
+                <h2 class="text-2xl font-bold text-white mt-6 mb-4">Список товаров</h2>
                 <div id="admin-products" class="space-y-4"></div>
             </div>
         </div>
 
-        <div class="flex justify-around mt-6">
-            <button onclick="showCatalog()" class="py-3 px-6 rounded-lg">Каталог</button>
-            <button onclick="showCart()" class="py-3 px-6 rounded-lg">Корзина</button>
-            <button onclick="showAdmin()" class="py-3 px-6 rounded-lg">Админ-панель</button>
+        <!-- Адреса -->
+        <div id="addresses" class="bg-white bg-opacity-10 backdrop-blur-lg rounded-lg shadow-2xl p-6 mb-6 hidden animate-fadeIn">
+            <h1 class="text-4xl font-extrabold text-center mb-6 drop-shadow-lg">Адреса</h1>
+            <p class="text-lg">г. Сургут, ул. Ароматная, 10</p>
         </div>
+
+        <!-- Обратная связь -->
+        <div id="contact" class="bg-white bg-opacity-10 backdrop-blur-lg rounded-lg shadow-2xl p-6 mb-6 hidden animate-fadeIn">
+            <h1 class="text-4xl font-extrabold text-center mb-6 drop-shadow-lg">Обратная связь</h1>
+            <p class="text-lg">Свяжитесь с нами: <a href="https://t.me/PerfumeSupport" class="text-blue-300 hover:underline">@PerfumeSupport</a></p>
+        </div>
+    </div>
+
+    <!-- Навигация -->
+    <div class="fixed bottom-0 left-0 right-0 bg-white bg-opacity-95 p-4 flex justify-around shadow-lg">
+        <button onclick="showSection('home')" class="nav-button text-2xl text-gray-800 hover:text-blue-600"><i class="fas fa-home"></i></button>
+        <button onclick="showSection('catalog')" class="nav-button text-2xl text-gray-800 hover:text-blue-600"><i class="fas fa-th-list"></i></button>
+        <button onclick="showSection('cart')" class="nav-button text-2xl text-gray-800 hover:text-blue-600"><i class="fas fa-shopping-cart"></i></button>
+        <button onclick="showSection('admin')" class="nav-button text-2xl text-gray-800 hover:text-blue-600"><i class="fas fa-user-shield"></i></button>
+        <button onclick="showSection('addresses')" class="nav-button text-2xl text-gray-800 hover:text-blue-600"><i class="fas fa-map-marker-alt"></i></button>
+        <button onclick="showSection('contact')" class="nav-button text-2xl text-gray-800 hover:text-blue-600"><i class="fas fa-envelope"></i></button>
     </div>
 
     <script>
         let products = JSON.parse(localStorage.getItem('products')) || [
-            { id: 1, name: 'Парфюм "Летний бриз"', description: 'Свежий аромат с нотами моря и цитрусовых.', price: 1200, image: 'https://via.placeholder.com/300?text=Летний+бриз' },
-            { id: 2, name: 'Парфюм "Тёмная роза"', description: 'Глубокий цветочный аромат с оттенками розы и ванили.', price: 1800, image: 'https://via.placeholder.com/300?text=Тёмная+роза' },
-            { id: 3, name: 'Парфюм "Золотой закат"', description: 'Теплый и пряный аромат с нотами амбры и сандала.', price: 2500, image: 'https://via.placeholder.com/300?text=Золотой+закат' }
+            { id: 1, name: 'Летний бриз', category: 'unisex', description: 'Свежий аромат с нотами моря и цитрусовых.', price: 1200, photo: 'https://via.placeholder.com/300?text=Летний+бриз', video: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', available: true, sample: true },
+            { id: 2, name: 'Тёмная роза', category: 'women\'s', description: 'Глубокий цветочный аромат с оттенками розы и ванили.', price: 1800, photo: 'https://via.placeholder.com/300?text=Тёмная+роза', video: '', available: true, sample: false },
+            { id: 3, name: 'Золотой закат', category: 'men\'s', description: 'Теплый и пряный аромат с нотами амбры и сандала.', price: 2500, photo: 'https://via.placeholder.com/300?text=Золотой+закат', video: '', available: false, sample: true },
+            { id: 4, name: 'Цветочная мечта', category: 'women\'s', description: 'Нежный аромат с нотами лилии и фрезии.', price: 2200, photo: 'https://via.placeholder.com/300?text=Цветочная+мечта', video: '', available: true, sample: true },
+            { id: 5, name: 'Пряная ночь', category: 'men\'s', description: 'Пряный вечерний аромат с нотами перца и кардамона.', price: 2800, photo: 'https://via.placeholder.com/300?text=Пряная+ночь', video: '', available: true, sample: false },
+            { id: 6, name: 'Цитрусовый взрыв', category: 'unisex', description: 'Яркий цитрусовый аромат с нотами апельсина и грейпфрута.', price: 1900, photo: 'https://via.placeholder.com/300?text=Цитрусовый+взрыв', video: '', available: true, sample: true },
+            { id: 7, name: 'Ванильное небо', category: 'women\'s', description: 'Сладкий ванильный аромат с нотами кокоса и мускуса.', price: 2000, photo: 'https://via.placeholder.com/300?text=Ванильное+небо', video: '', available: false, sample: false },
+            { id: 8, name: 'Кожаная роскошь', category: 'men\'s', description: 'Роскошный кожаный аромат с нотами табака и ветивера.', price: 3000, photo: 'https://via.placeholder.com/300?text=Кожаная+роскошь', video: '', available: true, sample: true },
+            { id: 9, name: 'Восточная пряность', category: 'unisex', description: 'Экзотический восточный аромат с нотами корицы и пачули.', price: 2700, photo: 'https://via.placeholder.com/300?text=Восточная+пряность', video: '', available: true, sample: false },
+            { id: 10, name: 'Свежая мята', category: 'unisex', description: 'Освежающий мятный аромат с нотами базилика и лайма.', price: 1600, photo: 'https://via.placeholder.com/300?text=Свежая+мята', video: '', available: true, sample: true }
         ];
-        let cart = [];
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
         let editingProductId = null;
         let currentSlide = 0;
 
@@ -165,79 +210,165 @@
             localStorage.setItem('products', JSON.stringify(products));
         }
 
-        function showCatalog() {
-            document.getElementById('catalog').classList.remove('hidden');
-            document.getElementById('cart').classList.add('hidden');
-            document.getElementById('admin').classList.add('hidden');
-            renderProducts();
+        function saveCart() {
+            localStorage.setItem('cart', JSON.stringify(cart));
         }
 
-        function showCart() {
-            document.getElementById('catalog').classList.add('hidden');
-            document.getElementById('cart').classList.remove('hidden');
-            document.getElementById('admin').classList.add('hidden');
-            renderCart();
+        function showSection(sectionId) {
+            const sections = ['home', 'catalog', 'cart', 'admin', 'addresses', 'contact', 'product-details'];
+            sections.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('hidden');
+            });
+            document.getElementById(sectionId).classList.remove('hidden');
+            if (sectionId === 'home') {
+                renderCarousel();
+                showSlide(0);
+            } else if (sectionId === 'catalog') {
+                renderCatalog();
+            } else if (sectionId === 'cart') {
+                renderCart();
+            } else if (sectionId === 'admin') {
+                document.getElementById('admin-content').classList.add('hidden');
+                document.getElementById('admin-password').value = '';
+            }
         }
 
-        function showAdmin() {
-            document.getElementById('catalog').classList.add('hidden');
-            document.getElementById('cart').classList.add('hidden');
-            document.getElementById('admin').classList.remove('hidden');
-        }
-
-        function renderProducts() {
-            const productsDiv = document.getElementById('products');
-            productsDiv.innerHTML = '';
-            products.forEach(product => {
-                const productDiv = document.createElement('div');
-                productDiv.className = 'carousel-item product p-4 text-center';
-                productDiv.innerHTML = `
-                    <div class="product-inner bg-white bg-opacity-20 rounded-lg shadow-lg p-6">
-                        <img src="${product.image}" alt="${product.name}" class="mb-4 rounded-md w-full h-48 object-cover">
-                        <h3 class="text-2xl font-bold drop-shadow-md">${product.name}</h3>
-                        <p>${product.description}</p>
-                        <p class="text-green-300 font-bold mt-2 text-xl">Цена: ${product.price} руб.</p>
-                        <button onclick="addToCart(${product.id})" class="mt-4 py-2 px-4 rounded-lg">Добавить в корзину</button>
+        function renderCarousel() {
+            const carouselInner = document.getElementById('carousel-inner');
+            carouselInner.innerHTML = '';
+            const topProducts = products.slice(0, 10);
+            topProducts.forEach(product => {
+                const item = document.createElement('div');
+                item.className = 'carousel-item text-center';
+                item.innerHTML = `
+                    <div class="product p-4">
+                        <div class="product-inner bg-white bg-opacity-20 rounded-lg shadow-lg p-6">
+                            <img src="${product.photo}" alt="${product.name}" class="mb-4 rounded-md w-full h-48 object-cover">
+                            <h3 class="text-2xl font-bold text-white drop-shadow-md">${product.name}</h3>
+                            <p class="text-gray-200">${product.description}</p>
+                            <p class="text-green-300 font-bold mt-2 text-xl">Цена: ${product.price} руб.</p>
+                            <button onclick="viewProduct(${product.id})" class="bg-gradient-to-r from-blue-400 to-blue-600 text-white px-6 py-2 rounded-full mt-4 hover:from-blue-500 hover:to-blue-700 transition transform hover:scale-105">Подробнее</button>
+                        </div>
                     </div>
                 `;
-                productsDiv.appendChild(productDiv);
+                carouselInner.appendChild(item);
             });
             updateCarousel();
         }
 
-        function slide(direction) {
-            currentSlide += direction;
-            if (currentSlide < 0) currentSlide = products.length - 1;
-            if (currentSlide >= products.length) currentSlide = 0;
+        function showSlide(index) {
+            const slides = document.querySelectorAll('.carousel-item');
+            if (index >= slides.length) index = 0;
+            if (index < 0) index = slides.length - 1;
+            currentSlide = index;
             updateCarousel();
         }
 
-        function updateCarousel() {
-            const productsDiv = document.getElementById('products');
-            productsDiv.style.transform = `translateX(-${currentSlide * 100}%)`;
+        function slide(direction) {
+            showSlide(currentSlide + direction);
         }
 
-        function addToCart(productId) {
-            const product = products.find(p => p.id === productId);
-            if (product) {
+        function updateCarousel() {
+            const carouselInner = document.getElementById('carousel-inner');
+            carouselInner.style.transform = `translateX(-${currentSlide * 100}%)`;
+        }
+
+        function renderCatalog() {
+            const productList = document.getElementById('product-list');
+            productList.innerHTML = '';
+            const filteredProducts = getFilteredProducts();
+            filteredProducts.forEach(product => {
+                const card = document.createElement('div');
+                card.className = 'product';
+                card.innerHTML = `
+                    <div class="product-inner bg-white bg-opacity-20 rounded-lg shadow-lg p-6">
+                        <img src="${product.photo}" alt="${product.name}" class="mb-4 rounded-md w-full h-48 object-cover">
+                        <h3 class="text-xl font-bold text-white drop-shadow-md">${product.name}</h3>
+                        <p class="text-gray-200">${product.description}</p>
+                        <p class="text-green-300 font-bold mt-2">Цена: ${product.price} руб.</p>
+                        <button onclick="viewProduct(${product.id})" class="bg-gradient-to-r from-blue-400 to-blue-600 text-white px-4 py-2 rounded-full mt-4 hover:from-blue-500 hover:to-blue-700 transition transform hover:scale-105">Подробнее</button>
+                    </div>
+                `;
+                productList.appendChild(card);
+            });
+        }
+
+        function getFilteredProducts() {
+            const search = document.getElementById('search').value.toLowerCase();
+            const category = document.getElementById('category').value;
+            return products.filter(product => {
+                const matchesSearch = product.name.toLowerCase().includes(search) || product.description.toLowerCase().includes(search);
+                const matchesCategory = category === '' || product.category === category;
+                return matchesSearch && matchesCategory;
+            });
+        }
+
+        function filterProducts() {
+            renderCatalog();
+        }
+
+        function viewProduct(id) {
+            const product = products.find(p => p.id === id);
+            if (!product) return;
+            document.getElementById('catalog').classList.add('hidden');
+            document.getElementById('product-details').classList.remove('hidden');
+            const productInfo = document.getElementById('product-info');
+            const videoId = getYouTubeId(product.video);
+            productInfo.innerHTML = `
+                <img src="${product.photo}" alt="${product.name}" class="w-full max-w-md mx-auto rounded-md mb-4">
+                <h2 class="text-3xl font-bold text-white drop-shadow-md mb-4">${product.name}</h2>
+                <p class="text-lg">Категория: ${product.category === 'men\'s' ? 'Мужские' : product.category === 'women\'s' ? 'Женские' : 'Унисекс'}</p>
+                <p class="text-lg">${product.description}</p>
+                <p class="text-lg text-green-300 font-bold">Цена: ${product.price} руб.</p>
+                <p class="text-lg">Доступен: ${product.available ? 'Да' : 'Нет'}</p>
+                <p class="text-lg">Возможен распив: ${product.sample ? 'Да' : 'Нет'}</p>
+                ${videoId ? `<iframe width="100%" height="315" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen class="mt-4 rounded-md"></iframe>` : ''}
+                <button onclick="addToCart(${product.id})" class="bg-gradient-to-r from-green-400 to-green-600 text-white px-6 py-3 rounded-full mt-6 w-full hover:from-green-500 hover:to-green-700 transition transform hover:scale-105">Добавить в корзину</button>
+            `;
+        }
+
+        function getYouTubeId(url) {
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
+
+        function backToCatalog() {
+            document.getElementById('product-details').classList.add('hidden');
+            document.getElementById('catalog').classList.remove('hidden');
+        }
+
+        function addToCart(id) {
+            const product = products.find(p => p.id === id);
+            if (product && product.available) {
                 cart.push(product);
+                saveCart();
                 alert('Товар добавлен в корзину!');
-                renderCart();
+            } else {
+                alert('Товар недоступен');
             }
         }
 
         function renderCart() {
             const cartItemsDiv = document.getElementById('cart-items');
             cartItemsDiv.innerHTML = '';
-            cart.forEach(item => {
+            cart.forEach((item, index) => {
                 const itemDiv = document.createElement('div');
                 itemDiv.className = 'flex items-center justify-between bg-white bg-opacity-20 p-4 rounded-md mb-2 transform hover:scale-102 transition';
                 itemDiv.innerHTML = `
-                    <img src="${item.image}" alt="${item.name}" class="w-16 h-16 object-cover rounded-md">
-                    <p>${item.name} - ${item.price} руб.</p>
+                    <img src="${item.photo}" alt="${item.name}" class="w-16 h-16 object-cover rounded-md">
+                    <p class="text-white">${item.name} - ${item.price} руб.</p>
+                    <button onclick="removeFromCart(${index})" class="bg-gradient-to-r from-red-400 to-red-600 text-white px-3 py-1 rounded-full hover:from-red-500 hover:to-red-700 transition">Удалить</button>
                 `;
                 cartItemsDiv.appendChild(itemDiv);
             });
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            saveCart();
+            renderCart();
         }
 
         function sendOrder() {
@@ -255,7 +386,8 @@
                     if (data.ok) {
                         alert('Заказ успешно отправлен!');
                         cart = [];
-                        showCatalog();
+                        saveCart();
+                        showSection('home');
                     } else {
                         alert('Ошибка отправки заказа');
                     }
@@ -280,11 +412,11 @@
                 const productDiv = document.createElement('div');
                 productDiv.className = 'flex items-center justify-between bg-white bg-opacity-20 p-4 rounded-md mb-2';
                 productDiv.innerHTML = `
-                    <img src="${product.image}" alt="${product.name}" class="w-12 h-12 object-cover rounded-md">
-                    <p>${product.name} - ${product.price} руб.</p>
+                    <img src="${product.photo}" alt="${product.name}" class="w-12 h-12 object-cover rounded-md">
+                    <p class="text-white">${product.name} - ${product.price} руб.</p>
                     <div>
-                        <button onclick="editProduct(${product.id})" class="bg-yellow-400 text-black px-3 py-1 rounded-full mr-2">Редактировать</button>
-                        <button onclick="deleteProduct(${product.id})" class="bg-red-400 text-black px-3 py-1 rounded-full">Удалить</button>
+                        <button onclick="editProduct(${product.id})" class="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white px-3 py-1 rounded-full mr-2 hover:from-yellow-500 hover:to-yellow-700 transition">Редактировать</button>
+                        <button onclick="deleteProduct(${product.id})" class="bg-gradient-to-r from-red-400 to-red-600 text-white px-3 py-1 rounded-full hover:from-red-500 hover:to-red-700 transition">Удалить</button>
                     </div>
                 `;
                 adminProductsDiv.appendChild(productDiv);
@@ -293,47 +425,43 @@
 
         function saveProduct() {
             const name = document.getElementById('product-name').value;
+            const category = document.getElementById('product-category').value;
             const description = document.getElementById('product-description').value;
-            const price = document.getElementById('product-price').value;
-            const fileInput = document.getElementById('product-image');
-            const file = fileInput.files[0];
+            const price = parseFloat(document.getElementById('product-price').value);
+            const photo = document.getElementById('product-photo').value;
+            const video = document.getElementById('product-video').value;
+            const available = document.getElementById('product-available').checked;
+            const sample = document.getElementById('product-sample').checked;
 
-            if (!name || !description || !price) {
-                alert('Заполните все поля');
+            if (!name || !category || !description || !price || !photo) {
+                alert('Заполните все обязательные поля');
                 return;
             }
 
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const image = e.target.result;
-                if (editingProductId) {
-                    const productIndex = products.findIndex(p => p.id === editingProductId);
-                    products[productIndex] = { id: editingProductId, name, description, price, image: image || products[productIndex].image };
-                } else {
-                    const newId = products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1;
-                    products.push({ id: newId, name, description, price, image });
-                }
-                saveProducts();
-                renderAdminProducts();
-                alert('Товар сохранен');
-                resetProductForm();
-            };
-            if (file) {
-                reader.readAsDataURL(file);
-            } else if (editingProductId) {
-                const product = products.find(p => p.id === editingProductId);
-                reader.onload({ target: { result: product.image } });
+            if (editingProductId) {
+                const productIndex = products.findIndex(p => p.id === editingProductId);
+                products[productIndex] = { id: editingProductId, name, category, description, price, photo, video, available, sample };
             } else {
-                alert('Выберите изображение');
+                const newId = products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1;
+                products.push({ id: newId, name, category, description, price, photo, video, available, sample });
             }
+            saveProducts();
+            renderAdminProducts();
+            alert('Товар сохранен');
+            resetProductForm();
         }
 
         function editProduct(productId) {
             const product = products.find(p => p.id === productId);
             if (product) {
                 document.getElementById('product-name').value = product.name;
+                document.getElementById('product-category').value = product.category;
                 document.getElementById('product-description').value = product.description;
                 document.getElementById('product-price').value = product.price;
+                document.getElementById('product-photo').value = product.photo;
+                document.getElementById('product-video').value = product.video;
+                document.getElementById('product-available').checked = product.available;
+                document.getElementById('product-sample').checked = product.sample;
                 editingProductId = productId;
             }
         }
@@ -348,13 +476,17 @@
 
         function resetProductForm() {
             document.getElementById('product-name').value = '';
+            document.getElementById('product-category').value = '';
             document.getElementById('product-description').value = '';
             document.getElementById('product-price').value = '';
-            document.getElementById('product-image').value = '';
+            document.getElementById('product-photo').value = '';
+            document.getElementById('product-video').value = '';
+            document.getElementById('product-available').checked = false;
+            document.getElementById('product-sample').checked = false;
             editingProductId = null;
         }
 
-        showCatalog();
+        showSection('home');
     </script>
 </body>
 </html>
