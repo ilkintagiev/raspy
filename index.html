@@ -8,8 +8,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js"></script>
     <style>
         body {
+            background: linear-gradient(135deg, #006A4E, #004d38); /* RAL 6016 gradient */
+            color: #ffffff; /* White text for contrast */
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
             overflow-x: hidden;
-            background: linear-gradient(135deg, #1e0533, #2a0a5e);
         }
         #particles-js {
             position: fixed;
@@ -59,17 +63,40 @@
             background: rgba(255,255,255,0.2);
             padding: 10px;
             border-radius: 50%;
+            color: white;
         }
         .btn-slide:hover {
             background: rgba(255,255,255,0.4);
         }
+        /* Button styles for contrast */
+        button {
+            background: linear-gradient(90deg, #ffffff, #f0f0f0);
+            color: #006A4E;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: scale(1.05);
+        }
+        /* Admin panel inputs */
+        input, textarea {
+            background: rgba(255, 255, 255, 0.8);
+            color: #333;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center text-white">
+<body>
     <div id="particles-js"></div>
     <div class="container mx-auto p-4 max-w-5xl relative">
         <div id="catalog" class="bg-white bg-opacity-10 backdrop-blur-lg rounded-lg shadow-2xl p-6 mb-6 animate-fadeIn">
-            <h1 class="text-4xl font-extrabold text-center text-white mb-6 drop-shadow-lg">Каталог товаров</h1>
+            <h1 class="text-4xl font-extrabold text-center mb-6 drop-shadow-lg">Каталог товаров</h1>
             <div class="carousel">
                 <div id="products" class="carousel-inner"></div>
                 <button onclick="slide(-1)" class="btn-slide left-0">❮</button>
@@ -78,31 +105,31 @@
         </div>
 
         <div id="cart" class="bg-white bg-opacity-10 backdrop-blur-lg rounded-lg shadow-2xl p-6 mb-6 hidden animate-fadeIn">
-            <h1 class="text-4xl font-extrabold text-center text-white mb-6 drop-shadow-lg">Корзина</h1>
+            <h1 class="text-4xl font-extrabold text-center mb-6 drop-shadow-lg">Корзина</h1>
             <div id="cart-items" class="space-y-4"></div>
-            <button onclick="sendOrder()" class="bg-gradient-to-r from-green-400 to-green-600 text-white px-6 py-3 rounded-full mt-6 w-full hover:from-green-500 hover:to-green-700 transition transform hover:scale-105">Отправить заказ</button>
+            <button onclick="sendOrder()" class="w-full py-3 mt-6 rounded-lg">Отправить заказ</button>
         </div>
 
         <div id="admin" class="bg-white bg-opacity-10 backdrop-blur-lg rounded-lg shadow-2xl p-6 mb-6 hidden animate-fadeIn">
-            <h1 class="text-4xl font-extrabold text-center text-white mb-6 drop-shadow-lg">Админ-панель</h1>
-            <input type="password" id="admin-password" class="bg-white bg-opacity-20 border-none rounded-md p-3 w-full mb-4 text-white placeholder-gray-300" placeholder="Пароль">
-            <button onclick="loginAdmin()" class="bg-gradient-to-r from-blue-400 to-blue-600 text-white px-6 py-3 rounded-full w-full hover:from-blue-500 hover:to-blue-700 transition transform hover:scale-105">Войти</button>
+            <h1 class="text-4xl font-extrabold text-center mb-6 drop-shadow-lg">Админ-панель</h1>
+            <input type="password" id="admin-password" class="w-full p-3 rounded-md mb-4" placeholder="Пароль">
+            <button onclick="loginAdmin()" class="w-full py-3 rounded-md">Войти</button>
             <div id="admin-content" class="hidden mt-6">
-                <h2 class="text-2xl font-bold text-white mb-4">Добавить/Редактировать товар</h2>
-                <input type="text" id="product-name" class="bg-white bg-opacity-20 border-none rounded-md p-3 w-full mb-4 text-white placeholder-gray-300" placeholder="Название">
-                <textarea id="product-description" class="bg-white bg-opacity-20 border-none rounded-md p-3 w-full mb-4 text-white placeholder-gray-300" placeholder="Описание"></textarea>
-                <input type="number" id="product-price" class="bg-white bg-opacity-20 border-none rounded-md p-3 w-full mb-4 text-white placeholder-gray-300" placeholder="Цена">
-                <input type="file" id="product-image" class="mb-4 text-white" accept="image/*">
-                <button onclick="saveProduct()" class="bg-gradient-to-r from-green-400 to-green-600 text-white px-6 py-3 rounded-full w-full hover:from-green-500 hover:to-green-700 transition transform hover:scale-105">Сохранить</button>
-                <h2 class="text-2xl font-bold text-white mt-6 mb-4">Список товаров</h2>
+                <h2 class="text-2xl font-bold mb-4">Добавить/Редактировать товар</h2>
+                <input type="text" id="product-name" class="w-full p-3 rounded-md mb-4" placeholder="Название">
+                <textarea id="product-description" class="w-full p-3 rounded-md mb-4" placeholder="Описание"></textarea>
+                <input type="number" id="product-price" class="w-full p-3 rounded-md mb-4" placeholder="Цена">
+                <input type="file" id="product-image" class="mb-4" accept="image/*">
+                <button onclick="saveProduct()" class="w-full py-3 rounded-md">Сохранить</button>
+                <h2 class="text-2xl font-bold mt-6 mb-4">Список товаров</h2>
                 <div id="admin-products" class="space-y-4"></div>
             </div>
         </div>
 
         <div class="flex justify-around mt-6">
-            <button onclick="showCatalog()" class="bg-gradient-to-r from-purple-400 to-purple-600 text-white px-6 py-3 rounded-full hover:from-purple-500 hover:to-purple-700 transition transform hover:scale-105">Каталог</button>
-            <button onclick="showCart()" class="bg-gradient-to-r from-purple-400 to-purple-600 text-white px-6 py-3 rounded-full hover:from-purple-500 hover:to-purple-700 transition transform hover:scale-105">Корзина</button>
-            <button onclick="showAdmin()" class="bg-gradient-to-r from-purple-400 to-purple-600 text-white px-6 py-3 rounded-full hover:from-purple-500 hover:to-purple-700 transition transform hover:scale-105">Админ-панель</button>
+            <button onclick="showCatalog()" class="py-3 px-6 rounded-lg">Каталог</button>
+            <button onclick="showCart()" class="py-3 px-6 rounded-lg">Корзина</button>
+            <button onclick="showAdmin()" class="py-3 px-6 rounded-lg">Админ-панель</button>
         </div>
     </div>
 
@@ -167,10 +194,10 @@
                 productDiv.innerHTML = `
                     <div class="product-inner bg-white bg-opacity-20 rounded-lg shadow-lg p-6">
                         <img src="${product.image}" alt="${product.name}" class="mb-4 rounded-md w-full h-48 object-cover">
-                        <h3 class="text-2xl font-bold text-white drop-shadow-md">${product.name}</h3>
-                        <p class="text-gray-200">${product.description}</p>
+                        <h3 class="text-2xl font-bold drop-shadow-md">${product.name}</h3>
+                        <p>${product.description}</p>
                         <p class="text-green-300 font-bold mt-2 text-xl">Цена: ${product.price} руб.</p>
-                        <button onclick="addToCart(${product.id})" class="bg-gradient-to-r from-blue-400 to-blue-600 text-white px-6 py-2 rounded-full mt-4 hover:from-blue-500 hover:to-blue-700 transition transform hover:scale-105">Добавить в корзину</button>
+                        <button onclick="addToCart(${product.id})" class="mt-4 py-2 px-4 rounded-lg">Добавить в корзину</button>
                     </div>
                 `;
                 productsDiv.appendChild(productDiv);
@@ -207,7 +234,7 @@
                 itemDiv.className = 'flex items-center justify-between bg-white bg-opacity-20 p-4 rounded-md mb-2 transform hover:scale-102 transition';
                 itemDiv.innerHTML = `
                     <img src="${item.image}" alt="${item.name}" class="w-16 h-16 object-cover rounded-md">
-                    <p class="text-white">${item.name} - ${item.price} руб.</p>
+                    <p>${item.name} - ${item.price} руб.</p>
                 `;
                 cartItemsDiv.appendChild(itemDiv);
             });
@@ -254,10 +281,10 @@
                 productDiv.className = 'flex items-center justify-between bg-white bg-opacity-20 p-4 rounded-md mb-2';
                 productDiv.innerHTML = `
                     <img src="${product.image}" alt="${product.name}" class="w-12 h-12 object-cover rounded-md">
-                    <p class="text-white">${product.name} - ${product.price} руб.</p>
+                    <p>${product.name} - ${product.price} руб.</p>
                     <div>
-                        <button onclick="editProduct(${product.id})" class="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white px-3 py-1 rounded-full mr-2 hover:from-yellow-500 hover:to-yellow-700 transition">Редактировать</button>
-                        <button onclick="deleteProduct(${product.id})" class="bg-gradient-to-r from-red-400 to-red-600 text-white px-3 py-1 rounded-full hover:from-red-500 hover:to-red-700 transition">Удалить</button>
+                        <button onclick="editProduct(${product.id})" class="bg-yellow-400 text-black px-3 py-1 rounded-full mr-2">Редактировать</button>
+                        <button onclick="deleteProduct(${product.id})" class="bg-red-400 text-black px-3 py-1 rounded-full">Удалить</button>
                     </div>
                 `;
                 adminProductsDiv.appendChild(productDiv);
