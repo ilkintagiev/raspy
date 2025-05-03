@@ -7,6 +7,9 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
     <style>
         body {
             background: linear-gradient(135deg, #006A4E, #004d38); /* RAL 6016 */
@@ -124,7 +127,10 @@
             <input type="password" id="admin-password" class="bg-white bg-opacity-20 border-none rounded-md p-3 w-full mb-4 text-white placeholder-gray-300" placeholder="Пароль">
             <button onclick="loginAdmin()" class="bg-gradient-to-r from-blue-400 to-blue-600 text-white px-6 py-3 rounded-full w-full hover:from-blue-500 hover:to-blue-700 transition transform hover:scale-105">Войти</button>
             <div id="admin-content" class="hidden mt-6">
-                <h2 class="text-2xl font-bold text-white mb-4">Добавить/Редактировать товар</h2>
+                <h2 class="text-2xl font-bold text-white mb-4">Поиск товара</h2>
+                <input type="text" id="admin-search" class="bg-white bg-opacity-20 border-none rounded-md p-3 w-full mb-4 text-white placeholder-gray-300" placeholder="Введите название товара" oninput="searchAdminProducts()">
+                <div id="admin-products" class="space-y-4"></div>
+                <h2 class="text-2xl font-bold text-white mt-6 mb-4">Добавить/Редактировать товар</h2>
                 <input type="text" id="product-name" class="bg-white bg-opacity-20 border-none rounded-md p-3 w-full mb-4 text-white placeholder-gray-300" placeholder="Название">
                 <select id="product-category" class="bg-white bg-opacity-20 border-none rounded-md p-3 w-full mb-4 text-white">
                     <option value="">Выберите категорию</option>
@@ -134,7 +140,7 @@
                 </select>
                 <textarea id="product-description" class="bg-white bg-opacity-20 border-none rounded-md p-3 w-full mb-4 text-white placeholder-gray-300" placeholder="Описание"></textarea>
                 <input type="number" id="product-price" class="bg-white bg-opacity-20 border-none rounded-md p-3 w-full mb-4 text-white placeholder-gray-300" placeholder="Цена">
-                <input type="text" id="product-photo" class="bg-white bg-opacity-20 border-none rounded-md p-3 w-full mb-4 text-white placeholder-gray-300" placeholder="URL фото">
+                <input type="file" id="product-photo" class="mb-4" accept="image/*">
                 <input type="text" id="product-video" class="bg-white bg-opacity-20 border-none rounded-md p-3 w-full mb-4 text-white placeholder-gray-300" placeholder="URL видео (YouTube)">
                 <label class="block mb-4">
                     <input type="checkbox" id="product-available" class="mr-2"> Доступен
@@ -143,15 +149,7 @@
                     <input type="checkbox" id="product-sample" class="mr-2"> Возможен распив
                 </label>
                 <button onclick="saveProduct()" class="bg-gradient-to-r from-green-400 to-green-600 text-white px-6 py-3 rounded-full w-full hover:from-green-500 hover:to-green-700 transition transform hover:scale-105">Сохранить</button>
-                <h2 class="text-2xl font-bold text-white mt-6 mb-4">Список товаров</h2>
-                <div id="admin-products" class="space-y-4"></div>
             </div>
-        </div>
-
-        <!-- Адреса -->
-        <div id="addresses" class="bg-white bg-opacity-10 backdrop-blur-lg rounded-lg shadow-2xl p-6 mb-6 hidden animate-fadeIn">
-            <h1 class="text-4xl font-extrabold text-center mb-6 drop-shadow-lg">Адреса</h1>
-            <p class="text-lg">г. Сургут, ул. Ароматная, 10</p>
         </div>
 
         <!-- Обратная связь -->
@@ -167,23 +165,24 @@
         <button onclick="showSection('catalog')" class="nav-button text-2xl text-gray-800 hover:text-blue-600"><i class="fas fa-th-list"></i></button>
         <button onclick="showSection('cart')" class="nav-button text-2xl text-gray-800 hover:text-blue-600"><i class="fas fa-shopping-cart"></i></button>
         <button onclick="showSection('admin')" class="nav-button text-2xl text-gray-800 hover:text-blue-600"><i class="fas fa-user-shield"></i></button>
-        <button onclick="showSection('addresses')" class="nav-button text-2xl text-gray-800 hover:text-blue-600"><i class="fas fa-map-marker-alt"></i></button>
         <button onclick="showSection('contact')" class="nav-button text-2xl text-gray-800 hover:text-blue-600"><i class="fas fa-envelope"></i></button>
     </div>
 
     <script>
-        let products = JSON.parse(localStorage.getItem('products')) || [
-            { id: 1, name: 'Летний бриз', category: 'unisex', description: 'Свежий аромат с нотами моря и цитрусовых.', price: 1200, photo: 'https://via.placeholder.com/300?text=Летний+бриз', video: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', available: true, sample: true },
-            { id: 2, name: 'Тёмная роза', category: 'women\'s', description: 'Глубокий цветочный аромат с оттенками розы и ванили.', price: 1800, photo: 'https://via.placeholder.com/300?text=Тёмная+роза', video: '', available: true, sample: false },
-            { id: 3, name: 'Золотой закат', category: 'men\'s', description: 'Теплый и пряный аромат с нотами амбры и сандала.', price: 2500, photo: 'https://via.placeholder.com/300?text=Золотой+закат', video: '', available: false, sample: true },
-            { id: 4, name: 'Цветочная мечта', category: 'women\'s', description: 'Нежный аромат с нотами лилии и фрезии.', price: 2200, photo: 'https://via.placeholder.com/300?text=Цветочная+мечта', video: '', available: true, sample: true },
-            { id: 5, name: 'Пряная ночь', category: 'men\'s', description: 'Пряный вечерний аромат с нотами перца и кардамона.', price: 2800, photo: 'https://via.placeholder.com/300?text=Пряная+ночь', video: '', available: true, sample: false },
-            { id: 6, name: 'Цитрусовый взрыв', category: 'unisex', description: 'Яркий цитрусовый аромат с нотами апельсина и грейпфрута.', price: 1900, photo: 'https://via.placeholder.com/300?text=Цитрусовый+взрыв', video: '', available: true, sample: true },
-            { id: 7, name: 'Ванильное небо', category: 'women\'s', description: 'Сладкий ванильный аромат с нотами кокоса и мускуса.', price: 2000, photo: 'https://via.placeholder.com/300?text=Ванильное+небо', video: '', available: false, sample: false },
-            { id: 8, name: 'Кожаная роскошь', category: 'men\'s', description: 'Роскошный кожаный аромат с нотами табака и ветивера.', price: 3000, photo: 'https://via.placeholder.com/300?text=Кожаная+роскошь', video: '', available: true, sample: true },
-            { id: 9, name: 'Восточная пряность', category: 'unisex', description: 'Экзотический восточный аромат с нотами корицы и пачули.', price: 2700, photo: 'https://via.placeholder.com/300?text=Восточная+пряность', video: '', available: true, sample: false },
-            { id: 10, name: 'Свежая мята', category: 'unisex', description: 'Освежающий мятный аромат с нотами базилика и лайма.', price: 1600, photo: 'https://via.placeholder.com/300?text=Свежая+мята', video: '', available: true, sample: true }
-        ];
+        // Вставьте свою конфигурацию Firebase здесь
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+
+        let products = [];
         let cart = JSON.parse(localStorage.getItem('cart')) || [];
         let editingProductId = null;
         let currentSlide = 0;
@@ -206,16 +205,20 @@
             retina_detect: true
         });
 
-        function saveProducts() {
-            localStorage.setItem('products', JSON.stringify(products));
-        }
-
-        function saveCart() {
-            localStorage.setItem('cart', JSON.stringify(cart));
+        // Загрузка товаров из Firestore
+        function loadProducts() {
+            db.collection('products').get().then(snapshot => {
+                products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderCarousel();
+                renderCatalog();
+                if (document.getElementById('admin-content').classList.contains('hidden') === false) {
+                    searchAdminProducts();
+                }
+            });
         }
 
         function showSection(sectionId) {
-            const sections = ['home', 'catalog', 'cart', 'admin', 'addresses', 'contact', 'product-details'];
+            const sections = ['home', 'catalog', 'cart', 'admin', 'contact', 'product-details'];
             sections.forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.classList.add('hidden');
@@ -237,6 +240,10 @@
         function renderCarousel() {
             const carouselInner = document.getElementById('carousel-inner');
             carouselInner.innerHTML = '';
+            if (products.length === 0) {
+                carouselInner.innerHTML = '<p class="text-center text-white">Нет товаров для отображения</p>';
+                return;
+            }
             const topProducts = products.slice(0, 10);
             topProducts.forEach(product => {
                 const item = document.createElement('div');
@@ -248,7 +255,7 @@
                             <h3 class="text-2xl font-bold text-white drop-shadow-md">${product.name}</h3>
                             <p class="text-gray-200">${product.description}</p>
                             <p class="text-green-300 font-bold mt-2 text-xl">Цена: ${product.price} руб.</p>
-                            <button onclick="viewProduct(${product.id})" class="bg-gradient-to-r from-blue-400 to-blue-600 text-white px-6 py-2 rounded-full mt-4 hover:from-blue-500 hover:to-blue-700 transition transform hover:scale-105">Подробнее</button>
+                            <button onclick="viewProduct('${product.id}')" class="bg-gradient-to-r from-blue-400 to-blue-600 text-white px-6 py-2 rounded-full mt-4 hover:from-blue-500 hover:to-blue-700 transition transform hover:scale-105">Подробнее</button>
                         </div>
                     </div>
                 `;
@@ -277,6 +284,10 @@
         function renderCatalog() {
             const productList = document.getElementById('product-list');
             productList.innerHTML = '';
+            if (products.length === 0) {
+                productList.innerHTML = '<p class="text-center text-white">Нет товаров для отображения</p>';
+                return;
+            }
             const filteredProducts = getFilteredProducts();
             filteredProducts.forEach(product => {
                 const card = document.createElement('div');
@@ -287,7 +298,7 @@
                         <h3 class="text-xl font-bold text-white drop-shadow-md">${product.name}</h3>
                         <p class="text-gray-200">${product.description}</p>
                         <p class="text-green-300 font-bold mt-2">Цена: ${product.price} руб.</p>
-                        <button onclick="viewProduct(${product.id})" class="bg-gradient-to-r from-blue-400 to-blue-600 text-white px-4 py-2 rounded-full mt-4 hover:from-blue-500 hover:to-blue-700 transition transform hover:scale-105">Подробнее</button>
+                        <button onclick="viewProduct('${product.id}')" class="bg-gradient-to-r from-blue-400 to-blue-600 text-white px-4 py-2 rounded-full mt-4 hover:from-blue-500 hover:to-blue-700 transition transform hover:scale-105">Подробнее</button>
                     </div>
                 `;
                 productList.appendChild(card);
@@ -324,7 +335,7 @@
                 <p class="text-lg">Доступен: ${product.available ? 'Да' : 'Нет'}</p>
                 <p class="text-lg">Возможен распив: ${product.sample ? 'Да' : 'Нет'}</p>
                 ${videoId ? `<iframe width="100%" height="315" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen class="mt-4 rounded-md"></iframe>` : ''}
-                <button onclick="addToCart(${product.id})" class="bg-gradient-to-r from-green-400 to-green-600 text-white px-6 py-3 rounded-full mt-6 w-full hover:from-green-500 hover:to-green-700 transition transform hover:scale-105">Добавить в корзину</button>
+                <button onclick="addToCart('${product.id}')" class="bg-gradient-to-r from-green-400 to-green-600 text-white px-6 py-3 rounded-full mt-6 w-full hover:from-green-500 hover:to-green-700 transition transform hover:scale-105">Добавить в корзину</button>
             `;
         }
 
@@ -341,12 +352,20 @@
 
         function addToCart(id) {
             const product = products.find(p => p.id === id);
-            if (product && product.available) {
-                cart.push(product);
-                saveCart();
-                alert('Товар добавлен в корзину!');
+            if (!product) return;
+            if (product.sample) {
+                const volume = prompt("Введите объем (1-50 мл):");
+                if (volume && !isNaN(volume) && volume >= 1 && volume <= 50) {
+                    cart.push({ product, volume: parseInt(volume) });
+                    localStorage.setItem('cart', JSON.stringify(cart));
+                    alert('Товар добавлен в корзину!');
+                } else {
+                    alert('Неверный объем');
+                }
             } else {
-                alert('Товар недоступен');
+                cart.push({ product, volume: null });
+                localStorage.setItem('cart', JSON.stringify(cart));
+                alert('Товар добавлен в корзину!');
             }
         }
 
@@ -357,8 +376,8 @@
                 const itemDiv = document.createElement('div');
                 itemDiv.className = 'flex items-center justify-between bg-white bg-opacity-20 p-4 rounded-md mb-2 transform hover:scale-102 transition';
                 itemDiv.innerHTML = `
-                    <img src="${item.photo}" alt="${item.name}" class="w-16 h-16 object-cover rounded-md">
-                    <p class="text-white">${item.name} - ${item.price} руб.</p>
+                    <img src="${item.product.photo}" alt="${item.product.name}" class="w-16 h-16 object-cover rounded-md">
+                    <p class="text-white">${item.product.name} - ${item.product.price} руб. ${item.volume ? `(${item.volume} мл)` : ''}</p>
                     <button onclick="removeFromCart(${index})" class="bg-gradient-to-r from-red-400 to-red-600 text-white px-3 py-1 rounded-full hover:from-red-500 hover:to-red-700 transition">Удалить</button>
                 `;
                 cartItemsDiv.appendChild(itemDiv);
@@ -367,7 +386,7 @@
 
         function removeFromCart(index) {
             cart.splice(index, 1);
-            saveCart();
+            localStorage.setItem('cart', JSON.stringify(cart));
             renderCart();
         }
 
@@ -376,9 +395,9 @@
                 alert('Корзина пуста');
                 return;
             }
-            const orderText = "Новый заказ:\n" + cart.map(item => `${item.name} - ${item.price} руб.`).join('\n');
-            const telegramToken = 'YOUR_TELEGRAM_BOT_TOKEN'; // Замените на ваш токен бота
-            const chatId = 'YOUR_CHAT_ID'; // Замените на ваш ID чата
+            const orderText = "Новый заказ:\n" + cart.map(item => `${item.product.name} - ${item.product.price} руб. ${item.volume ? `(${item.volume} мл)` : ''}`).join('\n');
+            const telegramToken = 'YOUR_TELEGRAM_BOT_TOKEN';
+            const chatId = 'YOUR_CHAT_ID';
             const url = `https://api.telegram.org/bot${telegramToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(orderText)}`;
             fetch(url)
                 .then(response => response.json())
@@ -386,7 +405,7 @@
                     if (data.ok) {
                         alert('Заказ успешно отправлен!');
                         cart = [];
-                        saveCart();
+                        localStorage.setItem('cart', JSON.stringify(cart));
                         showSection('home');
                     } else {
                         alert('Ошибка отправки заказа');
@@ -397,26 +416,33 @@
 
         function loginAdmin() {
             const password = document.getElementById('admin-password').value;
-            if (password === 'admin123') {
+            if (password === 'Ovik2025!') {
                 document.getElementById('admin-content').classList.remove('hidden');
-                renderAdminProducts();
+                document.getElementById('admin-search').value = '';
+                searchAdminProducts();
             } else {
                 alert('Неверный пароль');
             }
         }
 
-        function renderAdminProducts() {
+        function searchAdminProducts() {
+            const searchValue = document.getElementById('admin-search').value.toLowerCase();
+            const filteredProducts = products.filter(product => product.name.toLowerCase().includes(searchValue));
+            renderFilteredAdminProducts(filteredProducts);
+        }
+
+        function renderFilteredAdminProducts(filteredProducts) {
             const adminProductsDiv = document.getElementById('admin-products');
             adminProductsDiv.innerHTML = '';
-            products.forEach(product => {
+            filteredProducts.forEach(product => {
                 const productDiv = document.createElement('div');
                 productDiv.className = 'flex items-center justify-between bg-white bg-opacity-20 p-4 rounded-md mb-2';
                 productDiv.innerHTML = `
                     <img src="${product.photo}" alt="${product.name}" class="w-12 h-12 object-cover rounded-md">
                     <p class="text-white">${product.name} - ${product.price} руб.</p>
                     <div>
-                        <button onclick="editProduct(${product.id})" class="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white px-3 py-1 rounded-full mr-2 hover:from-yellow-500 hover:to-yellow-700 transition">Редактировать</button>
-                        <button onclick="deleteProduct(${product.id})" class="bg-gradient-to-r from-red-400 to-red-600 text-white px-3 py-1 rounded-full hover:from-red-500 hover:to-red-700 transition">Удалить</button>
+                        <button onclick="editProduct('${product.id}')" class="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white px-3 py-1 rounded-full mr-2 hover:from-yellow-500 hover:to-yellow-700 transition">Редактировать</button>
+                        <button onclick="deleteProduct('${product.id}')" class="bg-gradient-to-r from-red-400 to-red-600 text-white px-3 py-1 rounded-full hover:from-red-500 hover:to-red-700 transition">Удалить</button>
                     </div>
                 `;
                 adminProductsDiv.appendChild(productDiv);
@@ -428,27 +454,56 @@
             const category = document.getElementById('product-category').value;
             const description = document.getElementById('product-description').value;
             const price = parseFloat(document.getElementById('product-price').value);
-            const photo = document.getElementById('product-photo').value;
             const video = document.getElementById('product-video').value;
             const available = document.getElementById('product-available').checked;
             const sample = document.getElementById('product-sample').checked;
+            const fileInput = document.getElementById('product-photo');
+            const file = fileInput.files[0];
 
-            if (!name || !category || !description || !price || !photo) {
+            if (!name || !category || !description || !price) {
                 alert('Заполните все обязательные поля');
                 return;
             }
 
-            if (editingProductId) {
-                const productIndex = products.findIndex(p => p.id === editingProductId);
-                products[productIndex] = { id: editingProductId, name, category, description, price, photo, video, available, sample };
-            } else {
-                const newId = products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1;
-                products.push({ id: newId, name, category, description, price, photo, video, available, sample });
-            }
-            saveProducts();
-            renderAdminProducts();
-            alert('Товар сохранен');
-            resetProductForm();
+            const uploadImage = (file) => {
+                return new Promise((resolve, reject) => {
+                    if (!file) {
+                        resolve(null);
+                        return;
+                    }
+                    const storageRef = storage.ref(`products/${Date.now()}_${file.name}`);
+                    const uploadTask = storageRef.put(file);
+                    uploadTask.on('state_changed', null, reject, () => {
+                        uploadTask.snapshot.ref.getDownloadURL().then(resolve).catch(reject);
+                    });
+                });
+            };
+
+            uploadImage(file).then(photoUrl => {
+                const productData = {
+                    name,
+                    category,
+                    description,
+                    price,
+                    video,
+                    available,
+                    sample,
+                    photo: photoUrl || (editingProductId ? products.find(p => p.id === editingProductId).photo : '')
+                };
+                if (editingProductId) {
+                    db.collection('products').doc(editingProductId).update(productData).then(() => {
+                        alert('Товар обновлен');
+                        loadProducts();
+                        resetProductForm();
+                    }).catch(error => alert('Ошибка обновления: ' + error));
+                } else {
+                    db.collection('products').add(productData).then(() => {
+                        alert('Товар добавлен');
+                        loadProducts();
+                        resetProductForm();
+                    }).catch(error => alert('Ошибка добавления: ' + error));
+                }
+            }).catch(error => alert('Ошибка загрузки изображения: ' + error));
         }
 
         function editProduct(productId) {
@@ -458,7 +513,6 @@
                 document.getElementById('product-category').value = product.category;
                 document.getElementById('product-description').value = product.description;
                 document.getElementById('product-price').value = product.price;
-                document.getElementById('product-photo').value = product.photo;
                 document.getElementById('product-video').value = product.video;
                 document.getElementById('product-available').checked = product.available;
                 document.getElementById('product-sample').checked = product.sample;
@@ -468,9 +522,15 @@
 
         function deleteProduct(productId) {
             if (confirm('Удалить товар?')) {
-                products = products.filter(p => p.id !== productId);
-                saveProducts();
-                renderAdminProducts();
+                const product = products.find(p => p.id === productId);
+                if (product.photo) {
+                    const photoRef = storage.refFromURL(product.photo);
+                    photoRef.delete().catch(error => console.error('Ошибка удаления фото:', error));
+                }
+                db.collection('products').doc(productId).delete().then(() => {
+                    alert('Товар удален');
+                    loadProducts();
+                }).catch(error => alert('Ошибка удаления: ' + error));
             }
         }
 
@@ -479,13 +539,14 @@
             document.getElementById('product-category').value = '';
             document.getElementById('product-description').value = '';
             document.getElementById('product-price').value = '';
-            document.getElementById('product-photo').value = '';
             document.getElementById('product-video').value = '';
             document.getElementById('product-available').checked = false;
             document.getElementById('product-sample').checked = false;
+            document.getElementById('product-photo').value = '';
             editingProductId = null;
         }
 
+        loadProducts();
         showSection('home');
     </script>
 </body>
