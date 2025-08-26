@@ -1,553 +1,608 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Магазин парфюмерии</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+    <title>Unified AI Student Document Generator</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- HTML2Canvas for capturing DOM as image -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- jsPDF for generating PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- JSZip for creating zip files -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <!-- Inter font for consistent styling -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Tinos:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            background: linear-gradient(135deg, #006A4E, #004d38); /* RAL 6016 */
-            color: #ffffff;
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 0;
-            overflow-x: hidden;
+        /* General styling for preview containers */
+        .preview-container {
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            transform-origin: top center;
+            margin-bottom: 1rem;
+            background: white;
+            border-radius: 0.5rem; /* Added rounded corners */
         }
-        #particles-js {
-            position: fixed;
+        /* Specific dimensions for ID card */
+        .id-card-container {
+            width: 3.375in; /* Standard ID card width */
+            height: 2.125in; /* Standard ID card height */
+            font-family: 'Inter', sans-serif; /* Using Inter font */
+        }
+        /* Specific dimensions for receipt and schedule (scaled for preview) */
+        .receipt-container, .schedule-container {
+            width: 8.5in; /* Letter paper width */
+            min-height: 11in; /* Letter paper height */
+            font-family: 'Tinos', serif; /* Using Tinos font for these documents */
+            padding: 0.75in;
+        }
+        /* Tailwind-like classes for form elements */
+        .form-label { @apply block text-sm font-medium text-gray-700 mb-1; }
+        .form-input { @apply mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm; }
+        .modern-button { @apply inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50; }
+        /* Spinner animation */
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3); /* Lighter border for contrast */
+            border-top: 3px solid #4F46E5; /* Indigo top border */
+            border-radius: 50%;
+            width: 20px; /* Slightly larger spinner */
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Overlay for images during loading */
+        .image-container {
+            position: relative;
+            /* Ensures proper stacking context for spinner overlay */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .image-container .spinner-overlay {
+            position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fadeIn {
-            animation: fadeIn 0.8s ease-out;
-        }
-        .product {
-            perspective: 1000px;
-            transition: transform 0.4s ease;
-        }
-        .product-inner {
-            transform-style: preserve-3d;
-            transition: transform 0.4s ease;
-        }
-        .product:hover .product-inner {
-            transform: rotateY(10deg) scale(1.05);
-        }
-        .product img {
-            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.3));
-        }
-        .carousel {
-            overflow: hidden;
-            position: relative;
-        }
-        .carousel-inner {
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.7); /* Semi-transparent white overlay */
             display: flex;
-            transition: transform 0.5s ease;
-        }
-        .carousel-item {
-            min-width: 100%;
-            box-sizing: border-box;
-        }
-        .btn-slide {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            background: rgba(255,255,255,0.2);
-            padding: 10px;
-            border-radius: 50%;
-            color: white;
-        }
-        .btn-slide:hover {
-            background: rgba(255,255,255,0.4);
-        }
-        .nav-button {
-            transition: transform 0.2s;
-        }
-        .nav-button:hover {
-            transform: scale(1.1);
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.25rem; /* Match parent rounded corners */
         }
     </style>
 </head>
-<body class="min-h-screen">
-    <div id="particles-js"></div>
-    <div class="container mx-auto p-4 max-w-5xl relative">
-        <!-- Главная страница -->
-        <div id="home" class="bg-white bg-opacity-10 backdrop-blur-lg rounded-lg shadow-2xl p-6 mb-6 animate-fadeIn">
-            <h1 class="text-4xl font-extrabold text-center mb-6 drop-shadow-lg">Топ-10 ароматов</h1>
-            <div class="carousel">
-                <div id="carousel-inner" class="carousel-inner"></div>
-                <button onclick="slide(-1)" class="btn-slide left-0">❮</button>
-                <button onclick="slide(1)" class="btn-slide right-0">❯</button>
+<body class="font-inter bg-gray-100 min-h-screen flex items-start justify-center p-4">
+    <div class="flex flex-col lg:flex-row bg-white rounded-lg shadow-xl overflow-hidden w-full max-w-screen-2xl">
+        <!-- Left Panel: Edit Area -->
+        <div class="w-full lg:w-1/3 p-6 md:p-8 border-r border-gray-200 overflow-y-auto rounded-l-lg" style="max-height: 95vh;">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Document Generator</h2>
+            <div id="form-container" class="space-y-4">
+                 <div>
+                    <label for="college_name" class="form-label">College Name:</label>
+                    <input type="text" id="college_name" class="form-input rounded-md" list="college_list" placeholder="Select or type a college name">
+                    <datalist id="college_list"></datalist>
+                 </div>
+                 <button id="generate_button" class="modern-button w-full mt-4 rounded-md">
+                    <span class="button-text">✨ Generate All Documents with AI</span>
+                 </button>
+                 <button id="generate_schedule_button" class="modern-button w-full mt-2 rounded-md bg-purple-600 hover:bg-purple-700">
+                    <span class="button-text">✨ Generate Schedule with AI</span>
+                 </button>
+                 <button id="download_zip_button" class="modern-button w-full mt-2 hidden bg-green-600 hover:bg-green-700 rounded-md">
+                    📦 Download All (.zip)
+                 </button>
             </div>
         </div>
 
-        <!-- Каталог -->
-        <div id="catalog" class="bg-white bg-opacity-10 backdrop-blur-lg rounded-lg shadow-2xl p-6 mb-6 hidden animate-fadeIn">
-            <h1 class="text-4xl font-extrabold text-center mb-6 drop-shadow-lg">Каталог</h1>
-            <div class="flex flex-col sm:flex-row gap-4 mb-4">
-                <input type="text" id="search" class="bg-white bg-opacity-20 border-none rounded-md p-3 flex-1 text-white placeholder-gray-300" placeholder="Поиск по названию или описанию" oninput="filterProducts()">
-                <select id="category" class="bg-white bg-opacity-20 border-none rounded-md p-3 text-white" onchange="filterProducts()">
-                    <option value="">Все категории</option>
-                    <option value="men's">Мужские</option>
-                    <option value="women's">Женские</option>
-                    <option value="unisex">Унисекс</option>
-                </select>
+        <!-- Right Panel: Live Previews -->
+        <div class="w-full lg:w-2/3 p-6 md:p-8 flex flex-col items-center justify-start bg-gray-50 overflow-y-auto rounded-r-lg" style="max-height: 95vh;">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Live Previews</h2>
+            
+            <div class="w-full grid grid-cols-1 xl:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="font-bold text-lg mb-2">ID Card</h3>
+                    <div id="idCardPreview-front" class="preview-container id-card-container"></div>
+                </div>
+                <div>
+                    <h3 class="font-bold text-lg mb-2">Data File (info.txt)</h3>
+                    <pre id="info_txt_preview" class="bg-gray-100 p-4 rounded-md text-xs whitespace-pre-wrap h-48 overflow-auto font-mono"></pre>
+                </div>
             </div>
-            <div id="product-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
-        </div>
-
-        <!-- Детали товара -->
-        <div id="product-details" class="bg-white bg-opacity-10 backdrop-blur-lg rounded-lg shadow-2xl p-6 mb-6 hidden animate-fadeIn">
-            <button onclick="backToCatalog()" class="bg-gradient-to-r from-gray-400 to-gray-600 text-white px-4 py-2 rounded-full mb-4">Назад</button>
-            <div id="product-info"></div>
-        </div>
-
-        <!-- Корзина -->
-        <div id="cart" class="bg-white bg-opacity-10 backdrop-blur-lg rounded-lg shadow-2xl p-6 mb-6 hidden animate-fadeIn">
-            <h1 class="text-4xl font-extrabold text-center mb-6 drop-shadow-lg">Корзина</h1>
-            <div id="cart-items" class="space-y-4"></div>
-            <button onclick="sendOrder()" class="bg-gradient-to-r from-green-400 to-green-600 text-white px-6 py-3 rounded-full mt-6 w-full hover:from-green-500 hover:to-green-700 transition transform hover:scale-105">Отправить заказ</button>
-        </div>
-
-        <!-- Админ-панель -->
-        <div id="admin" class="bg-white bg-opacity-10 backdrop-blur-lg rounded-lg shadow-2xl p-6 mb-6 hidden animate-fadeIn">
-            <h1 class="text-4xl font-extrabold text-center mb-6 drop-shadow-lg">Админ-панель</h1>
-            <input type="password" id="admin-password" class="bg-white bg-opacity-20 border-none rounded-md p-3 w-full mb-4 text-white placeholder-gray-300" placeholder="Пароль">
-            <button onclick="loginAdmin()" class="bg-gradient-to-r from-blue-400 to-blue-600 text-white px-6 py-3 rounded-full w-full hover:from-blue-500 hover:to-blue-700 transition transform hover:scale-105">Войти</button>
-            <div id="admin-content" class="hidden mt-6">
-                <h2 class="text-2xl font-bold text-white mb-4">Поиск товара</h2>
-                <input type="text" id="admin-search" class="bg-white bg-opacity-20 border-none rounded-md p-3 w-full mb-4 text-white placeholder-gray-300" placeholder="Введите название товара" oninput="searchAdminProducts()">
-                <div id="admin-products" class="space-y-4"></div>
-                <h2 class="text-2xl font-bold text-white mt-6 mb-4">Добавить/Редактировать товар</h2>
-                <input type="text" id="product-name" class="bg-white bg-opacity-20 border-none rounded-md p-3 w-full mb-4 text-white placeholder-gray-300" placeholder="Название">
-                <select id="product-category" class="bg-white bg-opacity-20 border-none rounded-md p-3 w-full mb-4 text-white">
-                    <option value="">Выберите категорию</option>
-                    <option value="men's">Мужские</option>
-                    <option value="women's">Женские</option>
-                    <option value="unisex">Унисекс</option>
-                </select>
-                <textarea id="product-description" class="bg-white bg-opacity-20 border-none rounded-md p-3 w-full mb-4 text-white placeholder-gray-300" placeholder="Описание"></textarea>
-                <input type="number" id="product-price" class="bg-white bg-opacity-20 border-none rounded-md p-3 w-full mb-4 text-white placeholder-gray-300" placeholder="Цена">
-                <input type="file" id="product-photo" class="mb-4" accept="image/*">
-                <input type="text" id="product-video" class="bg-white bg-opacity-20 border-none rounded-md p-3 w-full mb-4 text-white placeholder-gray-300" placeholder="URL видео (YouTube)">
-                <label class="block mb-4">
-                    <input type="checkbox" id="product-available" class="mr-2"> Доступен
-                </label>
-                <label class="block mb-4">
-                    <input type="checkbox" id="product-sample" class="mr-2"> Возможен распив
-                </label>
-                <button onclick="saveProduct()" class="bg-gradient-to-r from-green-400 to-green-600 text-white px-6 py-3 rounded-full w-full hover:from-green-500 hover:to-green-700 transition transform hover:scale-105">Сохранить</button>
+            
+            <div class="w-full mt-6">
+                <h3 class="font-bold text-lg mb-2">Fee Receipt</h3>
+                <!-- Scaled down for preview, consider a zoom feature for better readability -->
+                <div id="receiptPreview" class="preview-container receipt-container" style="transform: scale(0.5);"></div>
             </div>
-        </div>
 
-        <!-- Обратная связь -->
-        <div id="contact" class="bg-white bg-opacity-10 backdrop-blur-lg rounded-lg shadow-2xl p-6 mb-6 hidden animate-fadeIn">
-            <h1 class="text-4xl font-extrabold text-center mb-6 drop-shadow-lg">Обратная связь</h1>
-            <p class="text-lg">Свяжитесь с нами: <a href="https://t.me/PerfumeSupport" class="text-blue-300 hover:underline">@PerfumeSupport</a></p>
+            <div class="w-full mt-6">
+                <h3 class="font-bold text-lg mb-2">Class Schedule</h3>
+                <!-- Scaled down for preview, consider a zoom feature for better readability -->
+                <div id="schedulePreview" class="preview-container schedule-container" style="transform: scale(0.5);"></div>
+            </div>
         </div>
     </div>
-
-    <!-- Навигация -->
-    <div class="fixed bottom-0 left-0 right-0 bg-white bg-opacity-95 p-4 flex justify-around shadow-lg">
-        <button onclick="showSection('home')" class="nav-button text-2xl text-gray-800 hover:text-blue-600"><i class="fas fa-home"></i></button>
-        <button onclick="showSection('catalog')" class="nav-button text-2xl text-gray-800 hover:text-blue-600"><i class="fas fa-th-list"></i></button>
-        <button onclick="showSection('cart')" class="nav-button text-2xl text-gray-800 hover:text-blue-600"><i class="fas fa-shopping-cart"></i></button>
-        <button onclick="showSection('admin')" class="nav-button text-2xl text-gray-800 hover:text-blue-600"><i class="fas fa-user-shield"></i></button>
-        <button onclick="showSection('contact')" class="nav-button text-2xl text-gray-800 hover:text-blue-600"><i class="fas fa-envelope"></i></button>
-    </div>
-
+    
     <script>
-        // Вставьте свою конфигурацию Firebase здесь
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_AUTH_DOMAIN",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const storage = firebase.storage();
+        // Define arrays for generating random data
+        const maleFirstNames = ["Aarav", "Vihaan", "Aditya", "Arjun", "Sai", "Reyansh", "Ayaan", "Krishna", "Ishaan", "Rohan"];
+        const lastNames = ["Sharma", "Verma", "Gupta", "Singh", "Kumar", "Patel", "Shah", "Khan", "Malhotra", "Chopra"];
+        const programmes = ["B.Pharmacy", "D.Pharmacy", "B.Tech in CS", "B.Com (Honours)", "B.A. in English"];
+        const colleges = ["Indian Institute of Technology Bombay", "University of Delhi", "Banaras Hindu University", "Vellore Institute of Technology", "Jadavpur University"];
+        
+        // Object to store all generated data
+        let generatedData = {};
 
-        let products = [];
-        let cart = JSON.parse(localStorage.getItem('cart')) || [];
-        let editingProductId = null;
-        let currentSlide = 0;
-
-        particlesJS('particles-js', {
-            particles: {
-                number: { value: 80, density: { enable: true, value_area: 800 } },
-                color: { value: '#ffffff' },
-                shape: { type: 'circle' },
-                opacity: { value: 0.5, random: true },
-                size: { value: 3, random: true },
-                line_linked: { enable: true, distance: 150, color: '#ffffff', opacity: 0.4, width: 1 },
-                move: { enable: true, speed: 2, direction: 'none', random: false, straight: false, out_mode: 'out' }
-            },
-            interactivity: {
-                detect_on: 'canvas',
-                events: { onhover: { enable: true, mode: 'repulse' }, onclick: { enable: true, mode: 'push' }, resize: true },
-                modes: { repulse: { distance: 100, duration: 0.4 }, push: { particles_nb: 4 } }
-            },
-            retina_detect: true
-        });
-
-        // Загрузка товаров из Firestore
-        function loadProducts() {
-            db.collection('products').get().then(snapshot => {
-                products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderCarousel();
-                renderCatalog();
-                if (document.getElementById('admin-content').classList.contains('hidden') === false) {
-                    searchAdminProducts();
-                }
-            });
-        }
-
-        function showSection(sectionId) {
-            const sections = ['home', 'catalog', 'cart', 'admin', 'contact', 'product-details'];
-            sections.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.classList.add('hidden');
-            });
-            document.getElementById(sectionId).classList.remove('hidden');
-            if (sectionId === 'home') {
-                renderCarousel();
-                showSlide(0);
-            } else if (sectionId === 'catalog') {
-                renderCatalog();
-            } else if (sectionId === 'cart') {
-                renderCart();
-            } else if (sectionId === 'admin') {
-                document.getElementById('admin-content').classList.add('hidden');
-                document.getElementById('admin-password').value = '';
-            }
-        }
-
-        function renderCarousel() {
-            const carouselInner = document.getElementById('carousel-inner');
-            carouselInner.innerHTML = '';
-            if (products.length === 0) {
-                carouselInner.innerHTML = '<p class="text-center text-white">Нет товаров для отображения</p>';
-                return;
-            }
-            const topProducts = products.slice(0, 10);
-            topProducts.forEach(product => {
-                const item = document.createElement('div');
-                item.className = 'carousel-item text-center';
-                item.innerHTML = `
-                    <div class="product p-4">
-                        <div class="product-inner bg-white bg-opacity-20 rounded-lg shadow-lg p-6">
-                            <img src="${product.photo}" alt="${product.name}" class="mb-4 rounded-md w-full h-48 object-cover">
-                            <h3 class="text-2xl font-bold text-white drop-shadow-md">${product.name}</h3>
-                            <p class="text-gray-200">${product.description}</p>
-                            <p class="text-green-300 font-bold mt-2 text-xl">Цена: ${product.price} руб.</p>
-                            <button onclick="viewProduct('${product.id}')" class="bg-gradient-to-r from-blue-400 to-blue-600 text-white px-6 py-2 rounded-full mt-4 hover:from-blue-500 hover:to-blue-700 transition transform hover:scale-105">Подробнее</button>
+        // --- DOCUMENT TEMPLATES ---
+        const templates = {
+            id_card_front_html: `
+                <div style="font-family: 'Inter', sans-serif; position: relative; width: 100%; height: 100%; display: flex; flex-direction: column; padding: 0.2rem; border: 1px solid #ddd; background: white;">
+                    <header class="flex items-center text-center border-b-2 border-gray-300 pb-1">
+                        <div class="h-10 w-10 image-container rounded-md"><img id="card_logo" src="https://placehold.co/50x50/E0E7FF/4F46E5?text=LOGO" class="h-10 w-10 object-contain rounded-md" alt="College Logo"></div>
+                        <div class="flex-grow px-1"><h1 id="card_collegeName" class="font-black text-xs uppercase text-blue-900 leading-tight"></h1></div>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Emblem_of_India.svg/1200px-Emblem_of_India.svg.png" class="h-10 w-10 object-contain rounded-md" alt="Emblem of India">
+                    </header>
+                    <main class="flex-grow flex items-center pt-2">
+                        <div class="w-1/3 text-center">
+                            <div class="w-20 h-24 mx-auto bg-gray-200 rounded-md overflow-hidden border-2 border-blue-900 image-container">
+                                <img id="card_photo" src="https://placehold.co/80x96/BFDBFE/4338CA?text=Photo" class="w-full h-full object-cover rounded-md" alt="Student Photo">
+                            </div>
+                        </div>
+                        <div class="w-2/3 text-[0.55rem] pl-2">
+                            <div class="space-y-1">
+                                <div><p class="font-bold text-gray-500 uppercase">Enroll. No.</p><p id="card_enrollment" class="font-semibold text-[0.6rem]"></p></div>
+                                <div><p class="font-bold text-gray-500 uppercase">Name</p><p id="card_name" class="font-bold text-sm"></p></div>
+                                <div><p class="font-bold text-gray-500 uppercase">Programme</p><p id="card_programme" class="font-semibold text-[0.6rem]"></p></div>
+                                <div class="grid grid-cols-2">
+                                    <div><p class="font-bold text-gray-500 uppercase">D.O.B</p><p id="card_dob" class="font-semibold text-[0.6rem]"></p></div>
+                                    <div><p class="font-bold text-gray-500 uppercase">Valid Thru</p><p id="card_validThru" class="font-semibold text-[0.6rem]"></p></div>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+                </div>`,
+            receipt_html: `
+                <div style="position: relative;" class="receipt-content font-tinos">
+                    <header class="text-center mb-6">
+                        <img id="receipt_logo" src="" class="h-24 w-24 mx-auto mb-4 object-contain rounded-md" alt="College Logo">
+                        <h1 id="receipt_collegeName" class="text-3xl font-bold"></h1>
+                    </header>
+                    <div class="text-center mb-6">
+                        <h2 class="text-xl font-bold inline-block px-4 py-1 border-2 border-black rounded-md">FEE RECEIPT</h2>
+                    </div>
+                    <div class="flex justify-between mb-4 text-sm">
+                        <div><strong>Date:</strong> <span id="receipt_date_val"></span></div>
+                    </div>
+                    <table class="w-full text-sm border-collapse border border-black mb-4 rounded-md overflow-hidden">
+                        <tr><td class="w-1/3 border border-black p-2"><strong>Enrollment No.:</strong></td><td id="receipt_enrollment_val" class="border border-black p-2"></td></tr>
+                        <tr><td class="border border-black p-2"><strong>Student Name:</strong></td><td id="receipt_name_val" class="border border-black p-2"></td></tr>
+                    </table>
+                    <table class="w-full text-sm border-collapse border border-black mb-4 rounded-md overflow-hidden">
+                        <thead>
+                            <tr>
+                                <th class="border border-black p-2 bg-gray-100">Particulars</th>
+                                <th class="border border-black p-2 bg-gray-100 text-right">Amount (INR)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="border border-black p-2">Tuition & Other Fees</td>
+                                <td class="border border-black p-2 text-right">85500.00</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td class="font-bold border border-black p-2">Total Amount Paid</td>
+                                <td class="font-bold border border-black p-2 text-right">85500.00</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                    <div class="flex justify-end pt-20">
+                        <div class="text-center">
+                            <p class="border-t border-black pt-1 font-bold">Authorised Signatory</p>
                         </div>
                     </div>
-                `;
-                carouselInner.appendChild(item);
-            });
-            updateCarousel();
-        }
-
-        function showSlide(index) {
-            const slides = document.querySelectorAll('.carousel-item');
-            if (index >= slides.length) index = 0;
-            if (index < 0) index = slides.length - 1;
-            currentSlide = index;
-            updateCarousel();
-        }
-
-        function slide(direction) {
-            showSlide(currentSlide + direction);
-        }
-
-        function updateCarousel() {
-            const carouselInner = document.getElementById('carousel-inner');
-            carouselInner.style.transform = `translateX(-${currentSlide * 100}%)`;
-        }
-
-        function renderCatalog() {
-            const productList = document.getElementById('product-list');
-            productList.innerHTML = '';
-            if (products.length === 0) {
-                productList.innerHTML = '<p class="text-center text-white">Нет товаров для отображения</p>';
-                return;
-            }
-            const filteredProducts = getFilteredProducts();
-            filteredProducts.forEach(product => {
-                const card = document.createElement('div');
-                card.className = 'product';
-                card.innerHTML = `
-                    <div class="product-inner bg-white bg-opacity-20 rounded-lg shadow-lg p-6">
-                        <img src="${product.photo}" alt="${product.name}" class="mb-4 rounded-md w-full h-48 object-cover">
-                        <h3 class="text-xl font-bold text-white drop-shadow-md">${product.name}</h3>
-                        <p class="text-gray-200">${product.description}</p>
-                        <p class="text-green-300 font-bold mt-2">Цена: ${product.price} руб.</p>
-                        <button onclick="viewProduct('${product.id}')" class="bg-gradient-to-r from-blue-400 to-blue-600 text-white px-4 py-2 rounded-full mt-4 hover:from-blue-500 hover:to-blue-700 transition transform hover:scale-105">Подробнее</button>
+                </div>`,
+            schedule_html: `
+                <div class="receipt-content font-tinos">
+                    <header class="text-center mb-6 pb-4 border-b-2 border-black">
+                        <img id="schedule_logo" src="" class="h-20 w-20 mx-auto mb-2 object-contain rounded-md" alt="College Logo">
+                        <h1 id="schedule_collegeName" class="text-2xl font-bold"></h1>
+                    </header>
+                    <div class="text-center mb-6">
+                        <h2 class="text-xl font-bold">CLASS SCHEDULE</h2>
                     </div>
-                `;
-                productList.appendChild(card);
+                    <div class="flex justify-between mb-4 text-sm">
+                        <div><strong>Student Name:</strong> <span id="schedule_name_val"></span></div>
+                        <div><strong>Enrollment No.:</strong> <span id="schedule_enrollment_val"></span></div>
+                    </div>
+                    <div class="flex justify-between mb-4 text-sm">
+                        <div><strong>Semester:</strong> <span>Fall Semester ${new Date().getFullYear()}</span></div>
+                        <div><strong>Date of Issue:</strong> <span id="schedule_date_val"></span></div>
+                    </div>
+                    <table class="w-full text-sm border-collapse border border-black mb-4 rounded-md overflow-hidden">
+                        <thead>
+                            <tr>
+                                <th class="border border-black p-2 bg-gray-100">COURSE CODE</th>
+                                <th class="border border-black p-2 bg-gray-100">COURSE NAME</th>
+                                <th class="border border-black p-2 bg-gray-100">DESCRIPTION</th>
+                            </tr>
+                        </thead>
+                        <tbody id="schedule_courses_tbody">
+                            <!-- Courses will be dynamically generated here -->
+                        </tbody>
+                    </table>
+                     <div class="flex justify-end pt-20">
+                        <div class="text-center">
+                            <p class="border-t border-black pt-1 font-bold">Authorised Signatory</p>
+                        </div>
+                    </div>
+                </div>`
+        };
+
+        // DOMContentLoaded event listener to initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            // Populate document templates into preview areas
+            document.getElementById('idCardPreview-front').innerHTML = templates.id_card_front_html;
+            document.getElementById('receiptPreview').innerHTML = templates.receipt_html;
+            document.getElementById('schedulePreview').innerHTML = templates.schedule_html;
+            
+            // Populate the college datalist for auto-completion
+            const datalist = document.getElementById('college_list');
+            colleges.forEach(college => {
+                const option = document.createElement('option');
+                option.value = college;
+                datalist.appendChild(option);
             });
-        }
 
-        function getFilteredProducts() {
-            const search = document.getElementById('search').value.toLowerCase();
-            const category = document.getElementById('category').value;
-            return products.filter(product => {
-                const matchesSearch = product.name.toLowerCase().includes(search) || product.description.toLowerCase().includes(search);
-                const matchesCategory = category === '' || product.category === category;
-                return matchesSearch && matchesCategory;
-            });
-        }
-
-        function filterProducts() {
-            renderCatalog();
-        }
-
-        function viewProduct(id) {
-            const product = products.find(p => p.id === id);
-            if (!product) return;
-            document.getElementById('catalog').classList.add('hidden');
-            document.getElementById('product-details').classList.remove('hidden');
-            const productInfo = document.getElementById('product-info');
-            const videoId = getYouTubeId(product.video);
-            productInfo.innerHTML = `
-                <img src="${product.photo}" alt="${product.name}" class="w-full max-w-md mx-auto rounded-md mb-4">
-                <h2 class="text-3xl font-bold text-white drop-shadow-md mb-4">${product.name}</h2>
-                <p class="text-lg">Категория: ${product.category === 'men\'s' ? 'Мужские' : product.category === 'women\'s' ? 'Женские' : 'Унисекс'}</p>
-                <p class="text-lg">${product.description}</p>
-                <p class="text-lg text-green-300 font-bold">Цена: ${product.price} руб.</p>
-                <p class="text-lg">Доступен: ${product.available ? 'Да' : 'Нет'}</p>
-                <p class="text-lg">Возможен распив: ${product.sample ? 'Да' : 'Нет'}</p>
-                ${videoId ? `<iframe width="100%" height="315" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen class="mt-4 rounded-md"></iframe>` : ''}
-                <button onclick="addToCart('${product.id}')" class="bg-gradient-to-r from-green-400 to-green-600 text-white px-6 py-3 rounded-full mt-6 w-full hover:from-green-500 hover:to-green-700 transition transform hover:scale-105">Добавить в корзину</button>
-            `;
-        }
-
-        function getYouTubeId(url) {
-            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-            const match = url.match(regExp);
-            return (match && match[2].length === 11) ? match[2] : null;
-        }
-
-        function backToCatalog() {
-            document.getElementById('product-details').classList.add('hidden');
-            document.getElementById('catalog').classList.remove('hidden');
-        }
-
-        function addToCart(id) {
-            const product = products.find(p => p.id === id);
-            if (!product) return;
-            if (product.sample) {
-                const volume = prompt("Введите объем (1-50 мл):");
-                if (volume && !isNaN(volume) && volume >= 1 && volume <= 50) {
-                    cart.push({ product, volume: parseInt(volume) });
-                    localStorage.setItem('cart', JSON.stringify(cart));
-                    alert('Товар добавлен в корзину!');
-                } else {
-                    alert('Неверный объем');
+            // Add event listeners to buttons
+            document.getElementById('generate_button').addEventListener('click', generateAll);
+            document.getElementById('generate_schedule_button').addEventListener('click', () => {
+                // Ensure basic data exists before trying to generate schedule
+                if (!generatedData.college || !generatedData.programme) {
+                    alert('Please generate all documents first to set college and programme, or manually enter a college name.');
+                    return;
                 }
-            } else {
-                cart.push({ product, volume: null });
-                localStorage.setItem('cart', JSON.stringify(cart));
-                alert('Товар добавлен в корзину!');
-            }
-        }
-
-        function renderCart() {
-            const cartItemsDiv = document.getElementById('cart-items');
-            cartItemsDiv.innerHTML = '';
-            cart.forEach((item, index) => {
-                const itemDiv = document.createElement('div');
-                itemDiv.className = 'flex items-center justify-between bg-white bg-opacity-20 p-4 rounded-md mb-2 transform hover:scale-102 transition';
-                itemDiv.innerHTML = `
-                    <img src="${item.product.photo}" alt="${item.product.name}" class="w-16 h-16 object-cover rounded-md">
-                    <p class="text-white">${item.product.name} - ${item.product.price} руб. ${item.volume ? `(${item.volume} мл)` : ''}</p>
-                    <button onclick="removeFromCart(${index})" class="bg-gradient-to-r from-red-400 to-red-600 text-white px-3 py-1 rounded-full hover:from-red-500 hover:to-red-700 transition">Удалить</button>
-                `;
-                cartItemsDiv.appendChild(itemDiv);
+                generateScheduleWithAi(generatedData.college, generatedData.programme);
             });
-        }
+            document.getElementById('download_zip_button').addEventListener('click', downloadAllAsZip);
+        });
 
-        function removeFromCart(index) {
-            cart.splice(index, 1);
-            localStorage.setItem('cart', JSON.stringify(cart));
-            renderCart();
-        }
-
-        function sendOrder() {
-            if (cart.length === 0) {
-                alert('Корзина пуста');
-                return;
-            }
-            const orderText = "Новый заказ:\n" + cart.map(item => `${item.product.name} - ${item.product.price} руб. ${item.volume ? `(${item.volume} мл)` : ''}`).join('\n');
-            const telegramToken = 'YOUR_TELEGRAM_BOT_TOKEN';
-            const chatId = 'YOUR_CHAT_ID';
-            const url = `https://api.telegram.org/bot${telegramToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(orderText)}`;
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.ok) {
-                        alert('Заказ успешно отправлен!');
-                        cart = [];
-                        localStorage.setItem('cart', JSON.stringify(cart));
-                        showSection('home');
-                    } else {
-                        alert('Ошибка отправки заказа');
-                    }
-                })
-                .catch(error => alert('Ошибка: ' + error));
-        }
-
-        function loginAdmin() {
-            const password = document.getElementById('admin-password').value;
-            if (password === 'Ovik2025!') {
-                document.getElementById('admin-content').classList.remove('hidden');
-                document.getElementById('admin-search').value = '';
-                searchAdminProducts();
-            } else {
-                alert('Неверный пароль');
-            }
-        }
-
-        function searchAdminProducts() {
-            const searchValue = document.getElementById('admin-search').value.toLowerCase();
-            const filteredProducts = products.filter(product => product.name.toLowerCase().includes(searchValue));
-            renderFilteredAdminProducts(filteredProducts);
-        }
-
-        function renderFilteredAdminProducts(filteredProducts) {
-            const adminProductsDiv = document.getElementById('admin-products');
-            adminProductsDiv.innerHTML = '';
-            filteredProducts.forEach(product => {
-                const productDiv = document.createElement('div');
-                productDiv.className = 'flex items-center justify-between bg-white bg-opacity-20 p-4 rounded-md mb-2';
-                productDiv.innerHTML = `
-                    <img src="${product.photo}" alt="${product.name}" class="w-12 h-12 object-cover rounded-md">
-                    <p class="text-white">${product.name} - ${product.price} руб.</p>
-                    <div>
-                        <button onclick="editProduct('${product.id}')" class="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white px-3 py-1 rounded-full mr-2 hover:from-yellow-500 hover:to-yellow-700 transition">Редактировать</button>
-                        <button onclick="deleteProduct('${product.id}')" class="bg-gradient-to-r from-red-400 to-red-600 text-white px-3 py-1 rounded-full hover:from-red-500 hover:to-red-700 transition">Удалить</button>
-                    </div>
-                `;
-                adminProductsDiv.appendChild(productDiv);
-            });
-        }
-
-        function saveProduct() {
-            const name = document.getElementById('product-name').value;
-            const category = document.getElementById('product-category').value;
-            const description = document.getElementById('product-description').value;
-            const price = parseFloat(document.getElementById('product-price').value);
-            const video = document.getElementById('product-video').value;
-            const available = document.getElementById('product-available').checked;
-            const sample = document.getElementById('product-sample').checked;
-            const fileInput = document.getElementById('product-photo');
-            const file = fileInput.files[0];
-
-            if (!name || !category || !description || !price) {
-                alert('Заполните все обязательные поля');
-                return;
+        /**
+         * Updates all document previews with the provided data.
+         * @param {Object} data - The generated student data.
+         */
+        function updateAllPreviews(data) {
+            // Update ID Card details
+            document.getElementById('card_collegeName').textContent = data.college || '';
+            document.getElementById('card_name').textContent = data.name || '';
+            document.getElementById('card_enrollment').textContent = data.enrollment || '';
+            document.getElementById('card_programme').textContent = data.programme || '';
+            document.getElementById('card_dob').textContent = data.dob || '';
+            document.getElementById('card_validThru').textContent = data.validThru || '';
+            if (data.photoUrl) document.getElementById('card_photo').src = data.photoUrl;
+            if (data.logoUrl) {
+                document.getElementById('card_logo').src = data.logoUrl;
+                document.getElementById('receipt_logo').src = data.logoUrl;
+                document.getElementById('schedule_logo').src = data.logoUrl;
             }
 
-            const uploadImage = (file) => {
-                return new Promise((resolve, reject) => {
-                    if (!file) {
-                        resolve(null);
-                        return;
-                    }
-                    const storageRef = storage.ref(`products/${Date.now()}_${file.name}`);
-                    const uploadTask = storageRef.put(file);
-                    uploadTask.on('state_changed', null, reject, () => {
-                        uploadTask.snapshot.ref.getDownloadURL().then(resolve).catch(reject);
-                    });
+            // Update TXT preview
+            const txtContent = `College: ${data.college || ''}\nName: ${data.name || ''}\nDOB: ${data.dob || ''}\nProgramme: ${data.programme || ''}\nEnrollment No.: ${data.enrollment || ''}\nValid Thru: ${data.validThru || ''}`;
+            document.getElementById('info_txt_preview').textContent = txtContent;
+
+            // Update Receipt details
+            const today = new Date().toISOString().slice(0, 10);
+            document.getElementById('receipt_collegeName').textContent = data.college || '';
+            document.getElementById('receipt_name_val').textContent = data.name || '';
+            document.getElementById('receipt_enrollment_val').textContent = data.enrollment || '';
+            document.getElementById('receipt_date_val').textContent = today;
+
+            // Update Schedule details
+            document.getElementById('schedule_collegeName').textContent = data.college || '';
+            document.getElementById('schedule_name_val').textContent = data.name || '';
+            document.getElementById('schedule_enrollment_val').textContent = data.enrollment || '';
+            document.getElementById('schedule_date_val').textContent = today;
+
+            // Update schedule courses if available
+            const scheduleTbody = document.getElementById('schedule_courses_tbody');
+            scheduleTbody.innerHTML = ''; // Clear previous courses
+            if (data.courses && Array.isArray(data.courses)) {
+                data.courses.forEach(course => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="border border-black p-2">${course.courseCode}</td>
+                        <td class="border border-black p-2">${course.courseName}</td>
+                        <td class="border border-black p-2 text-sm">${course.courseDescription}</td>
+                    `;
+                    scheduleTbody.appendChild(row);
                 });
+            }
+        }
+        
+        /**
+         * Returns a random element from an array.
+         * @param {Array} arr - The input array.
+         * @returns {*} A random element from the array.
+         */
+        function getRandomElement(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        /**
+         * Generates all student documents (ID card, receipt, schedule) with AI-generated images.
+         */
+        async function generateAll() {
+            const generateButton = document.getElementById('generate_button');
+            const generateScheduleButton = document.getElementById('generate_schedule_button');
+            const buttonText = generateButton.querySelector('.button-text');
+            generateButton.disabled = true;
+            generateScheduleButton.disabled = true; // Disable schedule button during full generation
+            buttonText.textContent = "Generating Data...";
+            
+            // Get college name from input or select a random one
+            let college = document.getElementById('college_name').value;
+            if (!college || !colleges.includes(college)) {
+                college = getRandomElement(colleges);
+                document.getElementById('college_name').value = college; // Update input with selected college
+            }
+
+            // Generate random student data
+            const name = `${getRandomElement(maleFirstNames)} ${getRandomElement(lastNames)}`;
+            const programme = getRandomElement(programmes);
+            const currentYear = new Date().getFullYear();
+            const birthYear = currentYear - (19 + Math.floor(Math.random() * 7)); // Student age between 19-25
+            const dob = `${birthYear}-${String(Math.floor(Math.random() * 12) + 1).padStart(2, '0')}-${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}`;
+            const endYear = currentYear + Math.floor(Math.random() * 3) + 1; // Valid for 1-3 years
+            const enrollment = `${college.split(' ').map(w => w[0]).join('')}/${endYear}/${String(Math.floor(100 + Math.random() * 900)).padStart(3, '0')}`;
+            const validThru = `08/${endYear}`; // Valid until August of endYear
+
+            generatedData = { college, name, enrollment, programme, dob, validThru };
+            updateAllPreviews(generatedData); // Update previews with text data first
+
+            const cardPhotoElement = document.getElementById('card_photo');
+            const cardLogoElement = document.getElementById('card_logo');
+            const photoContainer = cardPhotoElement.parentElement;
+            const logoContainer = cardLogoElement.parentElement;
+            
+            // Add spinner for photo generation
+            const photoSpinnerOverlay = document.createElement('div');
+            photoSpinnerOverlay.className = 'spinner-overlay';
+            photoSpinnerOverlay.innerHTML = `<div class="spinner"></div>`;
+            photoContainer.appendChild(photoSpinnerOverlay);
+            buttonText.textContent = "Generating Photo...";
+
+            // Generate student photo using AI
+            const photoPrompt = `A high-quality, professional, passport-style ID card photo of a young Indian male student named ${name}. Neutral expression, light gray background, clear face, shoulders visible.`;
+            const photoUrl = await generateAiImage(photoPrompt);
+            if (photoUrl) generatedData.photoUrl = photoUrl;
+            cardPhotoElement.src = generatedData.photoUrl || cardPhotoElement.src; // Update photo or keep placeholder
+            photoSpinnerOverlay.remove();
+
+            // Add spinner for logo generation
+            const logoSpinnerOverlay = document.createElement('div');
+            logoSpinnerOverlay.className = 'spinner-overlay';
+            logoSpinnerOverlay.innerHTML = `<div class="spinner"></div>`;
+            logoContainer.appendChild(logoSpinnerOverlay);
+            buttonText.textContent = "Generating Logo...";
+
+            // Generate college logo using AI
+            const logoPrompt = `A simple, modern, professional vector-style emblem logo for an educational institution named '${college}'. The logo should be clean, abstract, and suitable for an official ID card and documents, on a white background.`;
+            const logoUrl = await generateAiImage(logoPrompt);
+            if (logoUrl) generatedData.logoUrl = logoUrl;
+            cardLogoElement.src = generatedData.logoUrl || cardLogoElement.src; // Update logo or keep placeholder
+
+            // Also update receipt and schedule logos
+            document.getElementById('receipt_logo').src = generatedData.logoUrl || document.getElementById('receipt_logo').src;
+            document.getElementById('schedule_logo').src = generatedData.logoUrl || document.getElementById('schedule_logo').src;
+            logoSpinnerOverlay.remove();
+
+            // Generate schedule courses using AI
+            await generateScheduleWithAi(college, programme);
+
+            updateAllPreviews(generatedData); // Final update after images are loaded
+            
+            generateButton.disabled = false;
+            generateScheduleButton.disabled = false;
+            buttonText.textContent = "✨ Generate All Documents with AI";
+            document.getElementById('download_zip_button').classList.remove('hidden');
+        }
+
+        /**
+         * Generates an AI image from a given prompt with exponential backoff for retries.
+         * @param {string} prompt - The text prompt for image generation.
+         * @returns {Promise<string|null>} A promise that resolves to the base64 image URL or null on failure.
+         */
+        async function generateAiImage(prompt) {
+            const payload = { instances: [{ prompt }], parameters: { "sampleCount": 1} };
+            const apiKey = ""; // The environment provides this API key. DO NOT change this.
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`;
+            
+            const maxRetries = 5;
+            let retryDelay = 1000; // Start with 1 second delay
+
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        // If it's a server error or rate limit, retry
+                        if (response.status >= 500 || response.status === 429) {
+                            console.warn(`Attempt ${i + 1} failed for "${prompt}". Retrying in ${retryDelay / 1000}s...`);
+                            await new Promise(res => setTimeout(res, retryDelay));
+                            retryDelay *= 2; // Exponential backoff
+                            continue; // Go to next retry attempt
+                        } else {
+                            // Client-side errors or other unrecoverable errors
+                            throw new Error(`API request failed with status ${response.status}: ${response.statusText}`);
+                        }
+                    }
+
+                    const result = await response.json();
+                    if (result.predictions?.[0]?.bytesBase64Encoded) {
+                        return `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
+                    }
+                    throw new Error("No image data in API response.");
+
+                } catch(error) {
+                    console.error(`Error generating image for prompt "${prompt}" (Attempt ${i + 1}/${maxRetries}):`, error);
+                    // If it's the last attempt or a non-retryable error, rethrow or return null
+                    if (i === maxRetries - 1 || !(error.message.includes('API request failed with status'))) {
+                        return null; // Return null after max retries or unrecoverable error
+                    }
+                    await new Promise(res => setTimeout(res, retryDelay));
+                    retryDelay *= 2; // Exponential backoff
+                }
+            }
+            console.error(`Failed to generate image for prompt "${prompt}" after ${maxRetries} attempts.`);
+            return null; // Return null if all retries fail
+        }
+
+        /**
+         * Generates a class schedule with course names and descriptions using the Gemini LLM API.
+         * @param {string} college - The name of the college.
+         * @param {string} programme - The student's program of study.
+         */
+        async function generateScheduleWithAi(college, programme) {
+            const generateScheduleButton = document.getElementById('generate_schedule_button');
+            const buttonText = generateScheduleButton.querySelector('.button-text');
+            const originalButtonText = buttonText.textContent; // Store original text
+
+            generateScheduleButton.disabled = true;
+            buttonText.textContent = "Generating Schedule...";
+
+            const chatHistory = [];
+            const prompt = `Generate a list of three undergraduate course offerings for a student enrolled in ${programme} at ${college}. For each course, provide a unique course code (e.g., 'PH-101'), a descriptive course name, and a brief, one-sentence course description. Ensure the courses are relevant to the program. The output should be a JSON array.`;
+            chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+
+            const payload = {
+                contents: chatHistory,
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "ARRAY",
+                        items: {
+                            type: "OBJECT",
+                            properties: {
+                                "courseCode": { "type": "STRING" },
+                                "courseName": { "type": "STRING" },
+                                "courseDescription": { "type": "STRING" }
+                            },
+                            "propertyOrdering": ["courseCode", "courseName", "courseDescription"]
+                        }
+                    }
+                }
             };
+            const apiKey = ""; // The environment provides this API key. DO NOT change this.
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
 
-            uploadImage(file).then(photoUrl => {
-                const productData = {
-                    name,
-                    category,
-                    description,
-                    price,
-                    video,
-                    available,
-                    sample,
-                    photo: photoUrl || (editingProductId ? products.find(p => p.id === editingProductId).photo : '')
-                };
-                if (editingProductId) {
-                    db.collection('products').doc(editingProductId).update(productData).then(() => {
-                        alert('Товар обновлен');
-                        loadProducts();
-                        resetProductForm();
-                    }).catch(error => alert('Ошибка обновления: ' + error));
-                } else {
-                    db.collection('products').add(productData).then(() => {
-                        alert('Товар добавлен');
-                        loadProducts();
-                        resetProductForm();
-                    }).catch(error => alert('Ошибка добавления: ' + error));
+            const maxRetries = 5;
+            let retryDelay = 1000;
+
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        if (response.status >= 500 || response.status === 429) {
+                            console.warn(`Schedule generation attempt ${i + 1} failed. Retrying in ${retryDelay / 1000}s...`);
+                            await new Promise(res => setTimeout(res, retryDelay));
+                            retryDelay *= 2;
+                            continue;
+                        } else {
+                            throw new Error(`API request failed with status ${response.status}: ${response.statusText}`);
+                        }
+                    }
+
+                    const result = await response.json();
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0) {
+                        const json = result.candidates[0].content.parts[0].text;
+                        const parsedJson = JSON.parse(json);
+                        
+                        generatedData.courses = parsedJson; // Store generated courses
+                        updateAllPreviews(generatedData); // Update previews with new courses
+                        break; // Exit loop on success
+                    } else {
+                        throw new Error("Unexpected API response structure for schedule generation.");
+                    }
+                } catch (error) {
+                    console.error(`Error generating schedule (Attempt ${i + 1}/${maxRetries}):`, error);
+                    if (i === maxRetries - 1) { // If last attempt failed
+                        alert('Failed to generate schedule after multiple retries. Please try again.');
+                        generatedData.courses = []; // Clear courses on failure
+                        updateAllPreviews(generatedData); // Update to show empty/default
+                        break;
+                    }
+                    await new Promise(res => setTimeout(res, retryDelay));
+                    retryDelay *= 2;
                 }
-            }).catch(error => alert('Ошибка загрузки изображения: ' + error));
-        }
-
-        function editProduct(productId) {
-            const product = products.find(p => p.id === productId);
-            if (product) {
-                document.getElementById('product-name').value = product.name;
-                document.getElementById('product-category').value = product.category;
-                document.getElementById('product-description').value = product.description;
-                document.getElementById('product-price').value = product.price;
-                document.getElementById('product-video').value = product.video;
-                document.getElementById('product-available').checked = product.available;
-                document.getElementById('product-sample').checked = product.sample;
-                editingProductId = productId;
             }
+            
+            generateScheduleButton.disabled = false;
+            buttonText.textContent = originalButtonText; // Restore original text
         }
 
-        function deleteProduct(productId) {
-            if (confirm('Удалить товар?')) {
-                const product = products.find(p => p.id === productId);
-                if (product.photo) {
-                    const photoRef = storage.refFromURL(product.photo);
-                    photoRef.delete().catch(error => console.error('Ошибка удаления фото:', error));
-                }
-                db.collection('products').doc(productId).delete().then(() => {
-                    alert('Товар удален');
-                    loadProducts();
-                }).catch(error => alert('Ошибка удаления: ' + error));
-            }
-        }
+        /**
+         * Downloads all generated documents as a single ZIP file.
+         */
+        async function downloadAllAsZip() {
+            const downloadButton = document.getElementById('download_zip_button');
+            downloadButton.textContent = "Packaging...";
+            downloadButton.disabled = true;
+            
+            const zip = new JSZip();
+            
+            // 1. Add TXT file to the zip
+            const txtContent = `College: ${generatedData.college || ''}\nName: ${generatedData.name || ''}\nDOB: ${generatedData.dob || ''}\nProgramme: ${generatedData.programme || ''}\nEnrollment No.: ${generatedData.enrollment || ''}\nValid Thru: ${generatedData.validThru || ''}`;
+            zip.file("student_info.txt", txtContent);
 
-        function resetProductForm() {
-            document.getElementById('product-name').value = '';
-            document.getElementById('product-category').value = '';
-            document.getElementById('product-description').value = '';
-            document.getElementById('product-price').value = '';
-            document.getElementById('product-video').value = '';
-            document.getElementById('product-available').checked = false;
-            document.getElementById('product-sample').checked = false;
-            document.getElementById('product-photo').value = '';
-            editingProductId = null;
-        }
+            // 2. Add ID Card Front as PNG to the zip
+            // Scaling up for better quality in the downloaded image
+            const idCanvas = await html2canvas(document.getElementById('idCardPreview-front'), { scale: 3, useCORS: true });
+            zip.file("ID_Card_Front.png", idCanvas.toDataURL("image/png").split(',')[1], {base64: true});
+            
+            // 3. Add Fee Receipt as PDF to the zip
+            const receiptCanvas = await html2canvas(document.getElementById('receiptPreview'), { scale: 3, useCORS: true });
+            const receiptImgData = receiptCanvas.toDataURL('image/png');
+            // Create a new jsPDF instance for the receipt
+            const receiptPdf = new jspdf.jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+            receiptPdf.addImage(receiptImgData, 'PNG', 0, 0, receiptPdf.internal.pageSize.getWidth(), receiptPdf.internal.pageSize.getHeight());
+            zip.file("Fee_Receipt.pdf", await receiptPdf.output('blob'));
 
-        loadProducts();
-        showSection('home');
+            // 4. Add Class Schedule as PDF to the zip
+            const scheduleCanvas = await html2canvas(document.getElementById('schedulePreview'), { scale: 3, useCORS: true });
+            const scheduleImgData = scheduleCanvas.toDataURL('image/png');
+            // Create a new jsPDF instance for the schedule
+            const schedulePdf = new jspdf.jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+            schedulePdf.addImage(scheduleImgData, 'PNG', 0, 0, schedulePdf.internal.pageSize.getWidth(), schedulePdf.internal.pageSize.getHeight());
+            zip.file("Class_Schedule.pdf", await schedulePdf.output('blob'));
+
+            // Generate the ZIP file and trigger download
+            zip.generateAsync({type:"blob"}).then(function(content) {
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(content);
+                link.download = `Student_Documents_${generatedData.name.replace(/ /g, '_')}.zip`;
+                link.click();
+                // Reset button text and state
+                downloadButton.textContent = "📦 Download All (.zip)";
+                downloadButton.disabled = false;
+            });
+        }
     </script>
 </body>
 </html>
